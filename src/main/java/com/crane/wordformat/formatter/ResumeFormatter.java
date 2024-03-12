@@ -1,0 +1,88 @@
+package com.crane.wordformat.formatter;
+
+import com.aspose.words.Body;
+import com.aspose.words.Document;
+import com.aspose.words.Paragraph;
+import com.aspose.words.ParagraphAlignment;
+import com.aspose.words.Run;
+import com.aspose.words.SaveFormat;
+import com.aspose.words.Section;
+import com.aspose.words.StyleIdentifier;
+import com.crane.wordformat.formatter.dto.StyleConfigDto;
+import com.crane.wordformat.formatter.enums.SectionEnums;
+import com.crane.wordformat.formatter.global.FormattingProcessShareVar;
+import com.crane.wordformat.formatter.utils.MatchUtils;
+import com.crane.wordformat.formatter.utils.StyleUtils;
+
+public class ResumeFormatter extends AbstractFormatter {
+
+  private final StyleConfigDto styleConfigDto = formattingProcessShareVar.getStyleConfig(
+      sectionEnums());
+
+
+  public ResumeFormatter(FormattingProcessShareVar formattingProcessShareVar) {
+    super(formattingProcessShareVar);
+  }
+
+  @Override
+  public SectionEnums sectionEnums() {
+    return SectionEnums.个人简历;
+  }
+
+  @Override
+  public void confirmTitle(Paragraph paragraph) throws Exception {
+    String text = paragraph.toString(SaveFormat.TEXT);
+    if (titles.isEmpty() &&
+        StyleUtils.isNotToc(paragraph) &&
+        MatchUtils.match(text, "个人简历、在学期间完成的相关学术成果")
+    ) {
+      titles.add(StyleUtils.insertSectionBreakIfNotFirst(paragraph));
+    }
+  }
+
+  @Override
+  public void formatTitle() {
+    if (titles.isEmpty()) {
+      Document studetDocument = formattingProcessShareVar.getStudetDocument();
+      Section section = new Section(studetDocument);
+      studetDocument.getSections().add(section);
+      Paragraph title = new Paragraph(studetDocument);
+      Body body = new Body(studetDocument);
+      body.getParagraphs().add(title);
+      section.appendChild(body);
+      title.getRuns().add(new Run(studetDocument, "个人简历、在学期间完成的相关学术成果"));
+      titles.add(title);
+    }
+    for (Paragraph title : titles) {
+      StyleUtils.merge(title, styleConfigDto.getTitle(), StyleIdentifier.HEADING_1);
+      title.getListFormat().removeNumbers();
+      for (Run run : title.getRuns()) {
+        StyleUtils.merge(run.getFont(), styleConfigDto.getTitle());
+      }
+
+    }
+  }
+
+
+  @Override
+  public void formatBody() throws Exception {
+    for (Paragraph title : titles) {
+      for (Paragraph paragraph : title.getParentSection().getBody().getParagraphs()) {
+        String text = paragraph.toString(SaveFormat.TEXT).trim();
+        if (paragraph != title) {
+          if (text.matches("^个人简历$") || text.matches("^在学期间完成的相关学术成果$")) {
+            StyleUtils.merge(paragraph,
+                formattingProcessShareVar.getStyleConfig(SectionEnums.一级节标题).getTitle(),
+                StyleIdentifier.NORMAL);
+            paragraph.getParagraphFormat().setAlignment(ParagraphAlignment.CENTER);
+          } else {
+            StyleUtils.merge(paragraph, styleConfigDto.getText(), StyleIdentifier.NORMAL);
+            for (Run run : paragraph.getRuns()) {
+              StyleUtils.merge(run.getFont(), styleConfigDto.getText());
+            }
+          }
+        }
+      }
+    }
+  }
+}
