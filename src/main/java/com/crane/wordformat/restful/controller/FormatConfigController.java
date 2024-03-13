@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/format-config")
+@RequestMapping("/api/format-config")
 public class FormatConfigController {
 
   @Autowired

@@ -18,7 +18,9 @@ export default ({mode}: ConfigEnv): UserConfig => {
         '@': path.resolve(__dirname, './src'),
       },
     },
-
+    build: {
+      outDir: "../src/main/resources/static",
+    },
     css: {
       preprocessorOptions: {
         less: {

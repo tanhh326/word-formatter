@@ -34,55 +34,56 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/word-format")
+@RequestMapping("/api/word-format")
 public class IndexController {
 
-    @Autowired
-    private FormatConfigMapper formatConfigMapper;
+  @Autowired
+  private FormatConfigMapper formatConfigMapper;
 
-    @PostMapping("/formatting")
-    public ResponseEntity<byte[]> upload(@RequestParam("file") MultipartFile multipartFile)
-            throws Exception {
-        FormatConfigPO formatConfigPO = formatConfigMapper.selectList(new QueryWrapper<>()).get(0);
-        List<StyleConfigDto> styleConfigDtos = new ObjectMapper().convertValue(formatConfigPO.getConfig(), new TypeReference<>() {
+  @PostMapping("/formatting")
+  public ResponseEntity<byte[]> upload(@RequestParam("file") MultipartFile multipartFile)
+      throws Exception {
+    FormatConfigPO formatConfigPO = formatConfigMapper.selectList(new QueryWrapper<>()).get(0);
+    List<StyleConfigDto> styleConfigDtos = new ObjectMapper().convertValue(
+        formatConfigPO.getConfig(), new TypeReference<>() {
         });
-        System.out.println("start" + System.currentTimeMillis());
-        Document studentDocument = new Document(multipartFile.getInputStream());
-        FormattingProcessShareVar formattingProcessShareVar = new FormattingProcessShareVar(
-                styleConfigDtos, studentDocument);
-        List<AbstractFormatter> formatters = FormatterFactory.create(formattingProcessShareVar);
-        new PreHandler(studentDocument).execute();
-        NodeCollection<Node> nodes = studentDocument.getChildNodes(NodeType.ANY, true);
-        Node[] nodesArray = nodes.toArray();
-        for (Node node : nodesArray) {
-            // 只有在正文中的段落，并且不是toc目录中的才会被确认标题
-            if (node instanceof Paragraph paragraph &&
-                    paragraph.getParentNode() instanceof Body &&
-                    StyleUtils.isNotToc(paragraph)
-            ) {
-                for (AbstractFormatter formatter : formatters) {
-                    formatter.confirmTitle(paragraph);
-                }
-            }
-        }
+    System.out.println("start" + System.currentTimeMillis());
+    Document studentDocument = new Document(multipartFile.getInputStream());
+    FormattingProcessShareVar formattingProcessShareVar = new FormattingProcessShareVar(
+        styleConfigDtos, studentDocument);
+    List<AbstractFormatter> formatters = FormatterFactory.create(formattingProcessShareVar);
+    new PreHandler(studentDocument).execute();
+    NodeCollection<Node> nodes = studentDocument.getChildNodes(NodeType.ANY, true);
+    Node[] nodesArray = nodes.toArray();
+    for (Node node : nodesArray) {
+      // 只有在正文中的段落，并且不是toc目录中的才会被确认标题
+      if (node instanceof Paragraph paragraph &&
+          paragraph.getParentNode() instanceof Body &&
+          StyleUtils.isNotToc(paragraph)
+      ) {
         for (AbstractFormatter formatter : formatters) {
-            formatter.formatTitle();
+          formatter.confirmTitle(paragraph);
         }
-        for (AbstractFormatter formatter : formatters) {
-            formatter.formatBody();
-        }
-        new PostHandler(studentDocument, formatters).execute();
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        studentDocument.save(byteArrayOutputStream, SaveFormat.DOCX);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", "result.docx");
-        System.out.println("end" + System.currentTimeMillis());
-        return ResponseEntity.ok(byteArrayOutputStream.toByteArray());
+      }
     }
+    for (AbstractFormatter formatter : formatters) {
+      formatter.formatTitle();
+    }
+    for (AbstractFormatter formatter : formatters) {
+      formatter.formatBody();
+    }
+    new PostHandler(studentDocument, formatters).execute();
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    studentDocument.save(byteArrayOutputStream, SaveFormat.DOCX);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    headers.setContentDispositionFormData("attachment", "result.docx");
+    System.out.println("end" + System.currentTimeMillis());
+    return ResponseEntity.ok(byteArrayOutputStream.toByteArray());
+  }
 
-    @GetMapping("/beat")
-    public String beat() {
-        return UUID.randomUUID().toString();
-    }
+  @GetMapping("/beat")
+  public String beat() {
+    return UUID.randomUUID().toString();
+  }
 }

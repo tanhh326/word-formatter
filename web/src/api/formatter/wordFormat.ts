@@ -8,7 +8,7 @@ export const {add, remove, update, list, getById} = generateBasicApi(path);
 
 export function formatting(file: File) {
   return request.upload("file", file,
-      {url: path + "/formatting", responseType: 'blob',},
+      {url: path + "/formatting", responseType: 'blob', timeout: 10000 * 1000},
       {isTransformResponse: false}
   );
 }
