@@ -36,26 +36,15 @@ function requestMethod() {
 
 const loading = ref(false);
 
-function handleFormat() {
+async function handleFormat() {
   if (uploadFiles.value.length > 0) {
     loading.value = true;
     const selectedFile = uploadFiles.value[0].raw;
-
-    wordFormatApi.formatting(selectedFile).then((res) => {
-      const url = window.URL.createObjectURL(res);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = selectedFile.name;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      loading.value = false;
-    }).catch(error => {
-      console.log(error.message);
-      MessagePlugin.error(error.message);
-      loading.value = false;
-    })
+    await wordFormatApi.formatting(selectedFile);
+    await MessagePlugin.success("排版任务已创建");
+    loading.value = false;
   } else {
-    MessagePlugin.error("请先选择文件！")
+    await MessagePlugin.error("请先选择文件！")
   }
 }
 

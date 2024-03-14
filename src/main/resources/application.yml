@@ -1,7 +1,5 @@
 server:
   port: 7020
-  servlet:
-    context-path: /api
 spring:
   servlet:
     multipart:
@@ -14,7 +12,7 @@ spring:
     tomcat:
       max-http-form-post-size: 1000MB
   datasource:
-    url: jdbc:mysql://120.79.52.136:3306/word_format?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/word_format?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: root

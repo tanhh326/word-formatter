@@ -2,20 +2,10 @@ import cloneDeep from 'lodash/cloneDeep';
 import type {FormInstanceFunctions, FormRule} from 'tdesign-vue-next';
 import {DialogPlugin, Form, FormItem, Input, MessagePlugin} from 'tdesign-vue-next';
 import {reactive, ref} from 'vue';
-import {coverFormApi} from "@/api/formatter";
+import {formatConfigApi} from "@/api/formatter";
 
 const rules: Record<string, Array<FormRule>> = {
   name: [{required: true, message: '名称不能为空', trigger: 'change'}],
-};
-const form = {
-  "标题": "var1",
-  "副标题": "var2",
-  "培养单位": "var3",
-  "学科": "var4",
-  "研究生": "var5",
-  "指导教师": "var6",
-  "教师职称": "var7",
-  "时间": "var8",
 };
 
 export function handleAddUpdate<R extends Record<string, any>>(row: R | null, callBack: Function) {
@@ -47,7 +37,7 @@ export function handleAddUpdate<R extends Record<string, any>>(row: R | null, ca
     onConfirm: async () => {
       if ((await formRef.value.validate()) === true) {
         dialog.update({confirmBtn: {content: '保存中', loading: true}});
-        (isAdd ? coverFormApi.add(form) : coverFormApi.update(form))
+        (isAdd ? formatConfigApi.add(form) : formatConfigApi.update(form))
         .then(() => {
           MessagePlugin.success('已保存');
           dialog.hide();

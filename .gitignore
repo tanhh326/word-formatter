@@ -33,3 +33,5 @@ build/
 
 src/main/resources/lib
 src/main/resources/static
+
+storage-files/
