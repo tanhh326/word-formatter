@@ -2,6 +2,8 @@ package com.crane.wordformat.restful.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.crane.wordformat.restful.db.BasePo;
+import com.crane.wordformat.restful.enums.FormattingTaskStatusEnum;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -12,15 +14,21 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class FormattingTaskPO extends BasePo {
 
-  private String originDoc;
+    private String originDoc;
 
-  private String resultDoc;
+    private String resultDoc;
 
-  private String formatConfigName;
+    private String formatConfigName;
 
-  private String coverName;
+    private String coverName;
 
-  private Long totalTimeSpent;
+    private Long totalTimeSpent;
 
-  private Integer status;
+    /**
+     * {@link FormattingTaskStatusEnum#getValue()}
+     */
+    private Integer status;
+
+    @Column(columnDefinition = "longtext")
+    private String errorMsg;
 }

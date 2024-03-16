@@ -8,7 +8,7 @@ import com.crane.wordformat.restful.db.JpaMapJsonConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import java.util.HashMap;
+import java.util.List;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -30,5 +30,13 @@ public class CoverFormPO extends BasePo {
   @TableField(typeHandler = JacksonTypeHandler.class)
   @Column(columnDefinition = "json")
   @Convert(converter = JpaMapJsonConverter.class)
-  private HashMap<String, Object> form;
+  private List<Form> form;
+
+  @Data
+  public static class Form {
+
+    private String label;
+
+    private String key;
+  }
 }

@@ -1,8 +1,9 @@
 <script lang="tsx" setup>
 import {MessagePlugin, Space} from "tdesign-vue-next";
 import {ref} from "vue";
-import ConfigForm from "./components/ConfigForm.vue";
-import {wordFormatApi} from "@/api/formatter"
+import ConfigForm from "@/pages/formatter/format-config/components/ConfigForm.vue";
+import {coverFormApi, formatConfigApi, wordFormatApi} from "@/api/formatter"
+import {DEGREE_OPTIONS} from "./constant";
 
 const currTab = ref("1");
 
@@ -11,6 +12,18 @@ const columns = [
 ]
 
 const data = ref([]);
+
+const optionContainer = ref({
+  coverForm: [],
+  formatConfig: [],
+})
+
+coverFormApi.list({}).then(({records}) => {
+  optionContainer.value.coverForm = records.map((it: any) => ({label: it.name, value: it.id}));
+});
+formatConfigApi.list({}).then(({records}) => {
+  optionContainer.value.formatConfig = records.map((it: any) => ({label: it.name, value: it.id}));
+});
 const expandedRow = (h, {row}) => (
     <Space direction="vertical">
       {row.title && <ConfigForm type="标题" config={row.title}/>}
@@ -36,11 +49,18 @@ function requestMethod() {
 
 const loading = ref(false);
 
+
+const submitForm = ref({
+  degree: "",
+  coverFormId: "",
+  formatConfigId: ""
+});
+
 async function handleFormat() {
   if (uploadFiles.value.length > 0) {
     loading.value = true;
     const selectedFile = uploadFiles.value[0].raw;
-    await wordFormatApi.formatting(selectedFile);
+    await wordFormatApi.formatting(selectedFile, submitForm.value);
     await MessagePlugin.success("排版任务已创建");
     loading.value = false;
   } else {
@@ -64,6 +84,7 @@ function handleExport() {
 }
 
 const current = ref(0);
+
 </script>
 
 <template>
@@ -79,19 +100,36 @@ const current = ref(0);
       </t-step-item>
     </t-steps>
     <div class="step-form">
-      <t-upload
-          v-if="current==0"
-          v-model="uploadFiles" :abridge-name="[10, 8]"
-          :data="{ extra_data: 123, file_name: 'certificate' }"
-          :request-method="requestMethod"
-          draggable
-          theme="file"
-      />
-      <div v-if="current==1">封面</div>
+      <div v-if="current==0">
+        <t-form>
+          <t-form-item label="学位">
+            <t-select v-model="submitForm.degree" :options="DEGREE_OPTIONS"></t-select>
+          </t-form-item>
+          <t-form-item label="配置">
+            <t-select v-model="submitForm.formatConfigId"
+                      :options="optionContainer.formatConfig"></t-select>
+          </t-form-item>
+          <t-form-item label="封面">
+            <t-select v-model="submitForm.coverFormId"
+                      :options="optionContainer.coverForm"></t-select>
+          </t-form-item>
+        </t-form>
+      </div>
+      <div v-if="current==1">
+        <t-upload
+            v-model="uploadFiles" :abridge-name="[10, 8]"
+            :data="{ extra_data: 123, file_name: 'certificate' }"
+            :request-method="requestMethod"
+            draggable
+            theme="file"
+        />
+      </div>
       <div v-if="current==2">格式配置</div>
       <div v-if="current==3">选择封面</div>
     </div>
-    <t-button size="small" variant="base" @click="current++"> 下一步</t-button>
+    <t-button v-if="current" size="small" theme="default" variant="base" @click="current--">上一步
+    </t-button>
+    <t-button size="small" variant="base" @click="current++">下一步</t-button>
     <div></div>
     <t-space style="margin: 14px 0">
       <t-button theme="default" @click="handleExport">导出配置</t-button>

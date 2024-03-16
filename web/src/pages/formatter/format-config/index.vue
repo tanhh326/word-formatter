@@ -1,6 +1,6 @@
 <script lang="tsx" setup>
 import cloneDeep from 'lodash/cloneDeep';
-import {FormItem, Input, Link, Space} from 'tdesign-vue-next';
+import {DialogPlugin, FormItem, Input, Link, Space} from 'tdesign-vue-next';
 import {reactive} from 'vue';
 
 import CrudPage from '@/components/crud-page/index.vue';
@@ -33,7 +33,7 @@ const columns = [
     title: '配置',
     colKey: 'x',
     align: 'center',
-    cell: (_, {row}) => <Link theme="primary" underline>编辑</Link>
+    cell: (_, {row}) => <Link theme="primary" underline onClick={() => config(row)}>编辑</Link>
   },
   {
     title: '创建时间',
@@ -67,6 +67,11 @@ const columns = [
   },
 ];
 
+function config(row: any) {
+  DialogPlugin({
+    mode: "full-screen",
+  })
+}
 </script>
 
 <template>

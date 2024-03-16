@@ -9,7 +9,7 @@ import {
   LINE_SPACING_UNIT,
   LINE_SPACING_UNIT2,
   SPACING_UNIT
-} from "../constant";
+} from "./index";
 import {computed, ref} from "vue";
 
 const props = defineProps<{
