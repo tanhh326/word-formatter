@@ -86,13 +86,13 @@ public class ReferencesFormatter extends AbstractFormatter {
         StyleUtils.merge(paragraph, styleConfigDto.getText(), StyleIdentifier.NORMAL);
         // 悬挂缩进设置完后，会带有左缩进，需要将左缩进设为悬挂锁紧的负值才会为0
         // https://forum.aspose.com/t/paragraphformat-firstlineindent-hanging-indent-sets-the-left-indent-as-negative-using-java/55487/5
-        // 如果有自动编号或手写编号，清除重新生成
-        if (text.matches("^\\[\\s*\\d+\\s*\\].*$")) {
-          DocumentBase document = paragraph.getDocument();
-          RunCollection runs = paragraph.getRuns();
-          runs.clear();
-          runs.add(new Run(document,
-              text.replaceFirst("^\\[\\s*\\d+\\s*\\]\\s*", "").trim()));
+        // @Deprecated 如果有自动编号或手写编号，清除重新生成 text.matches("^\\[\\s*\\d+\\s*\\].*$"
+        DocumentBase document = paragraph.getDocument();
+        RunCollection runs = paragraph.getRuns();
+        runs.clear();
+        runs.add(new Run(document,
+            text.replaceFirst("^\\[\\s*\\d+\\s*\\]\\s*", "").trim()));
+        if (formattingProcessShareVar.getFormatProcessDTO().isReferencesOrderly()) {
           paragraph.getListFormat().setList(list);
           paragraph.getListFormat().getListLevel().setNumberPosition(0);
         }

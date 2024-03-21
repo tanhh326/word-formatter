@@ -1,12 +1,12 @@
 <script lang="tsx" setup>
 import cloneDeep from 'lodash/cloneDeep';
-import {DialogPlugin, FormItem, Input, Link, Space} from 'tdesign-vue-next';
+import {FormItem, Input, Link, Space} from 'tdesign-vue-next';
 import {reactive} from 'vue';
 
 import CrudPage from '@/components/crud-page/index.vue';
 import {usePage, useRemove} from '@/hooks';
 import {formatConfigApi} from "@/api/formatter";
-import {handleAddUpdate} from './handler';
+import {handleAddUpdate, handleConfig} from './handler';
 
 const defaultQueryForm = {code: '', deptId: '', name: ''};
 const queryForm = reactive(cloneDeep(defaultQueryForm));
@@ -33,7 +33,8 @@ const columns = [
     title: '配置',
     colKey: 'x',
     align: 'center',
-    cell: (_, {row}) => <Link theme="primary" underline onClick={() => config(row)}>编辑</Link>
+    cell: (_, {row}) => <Link theme="primary" underline
+                              onClick={() => handleConfig(row)}>编辑</Link>
   },
   {
     title: '创建时间',
@@ -66,12 +67,6 @@ const columns = [
     ),
   },
 ];
-
-function config(row: any) {
-  DialogPlugin({
-    mode: "full-screen",
-  })
-}
 </script>
 
 <template>

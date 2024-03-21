@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.util.StringUtils;
 
+@Deprecated
 public class CoverHandler {
 
   private final Document document;

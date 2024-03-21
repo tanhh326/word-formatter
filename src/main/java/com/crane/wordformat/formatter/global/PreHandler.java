@@ -2,7 +2,6 @@ package com.crane.wordformat.formatter.global;
 
 import com.aspose.words.Comment;
 import com.aspose.words.ControlChar;
-import com.aspose.words.Document;
 import com.aspose.words.Field;
 import com.aspose.words.FieldCollection;
 import com.aspose.words.FieldType;
@@ -22,10 +21,10 @@ import java.util.List;
 
 public class PreHandler {
 
-  private final Document document;
+  private final FormattingProcessShareVar formattingProcessShareVar;
 
-  public PreHandler(Document document) {
-    this.document = document;
+  public PreHandler(FormattingProcessShareVar formattingProcessShareVar) {
+    this.formattingProcessShareVar = formattingProcessShareVar;
   }
 
   /**
@@ -35,12 +34,15 @@ public class PreHandler {
    */
   private void mergeAllSectionToSingle() throws Exception {
     // 删除所有分节
-    for (int i = document.getSections().getCount() - 2; i >= 0; i--) {
+    for (int i = formattingProcessShareVar.getStudetDocument().getSections().getCount() - 2; i >= 0;
+        i--) {
       // 复制到最后一个分节
-      document.getLastSection().prependContent(document.getSections().get(i));
-      document.getSections().get(i).remove();
+      formattingProcessShareVar.getStudetDocument().getLastSection()
+          .prependContent(formattingProcessShareVar.getStudetDocument().getSections().get(i));
+      formattingProcessShareVar.getStudetDocument().getSections().get(i).remove();
     }
-    for (Object childNode : document.getChildNodes(NodeType.ANY, true)) {
+    for (Object childNode : formattingProcessShareVar.getStudetDocument()
+        .getChildNodes(NodeType.ANY, true)) {
       if (childNode instanceof Paragraph paragraph) {
         // 清除段落中的分节符，如果不删的话，分节符会导致章节的标题有两行，并且在不同页面上
         paragraph.getRange().replace(ControlChar.SECTION_BREAK, "");
@@ -54,8 +56,8 @@ public class PreHandler {
    * @throws Exception
    */
   private void mergeAutoNumber() throws Exception {
-    document.updateListLabels();
-    SectionCollection sections = document.getSections();
+    formattingProcessShareVar.getStudetDocument().updateListLabels();
+    SectionCollection sections = formattingProcessShareVar.getStudetDocument().getSections();
     for (Section section : sections) {
       ParagraphCollection paragraphs = section.getBody().getParagraphs();
       for (Paragraph paragraph : paragraphs) {
@@ -67,7 +69,7 @@ public class PreHandler {
           if (!labelString.isBlank()) {
             if (!text.isBlank()) {
               paragraph.getRuns()
-                  .insert(0, new Run(document, labelString));
+                  .insert(0, new Run(formattingProcessShareVar.getStudetDocument(), labelString));
             }
           }
           paragraph.getListFormat().removeNumbers();
@@ -80,7 +82,8 @@ public class PreHandler {
    * 处理文档前的清理工作
    */
   private void clearAnother() {
-    NodeCollection<Node> nodes = document.getChildNodes(NodeType.ANY, true);
+    NodeCollection<Node> nodes = formattingProcessShareVar.getStudetDocument()
+        .getChildNodes(NodeType.ANY, true);
     List<Node> removeNodes = new ArrayList<>();
     for (Node node : nodes) {
       if (node instanceof HeaderFooter) {
@@ -93,7 +96,8 @@ public class PreHandler {
   }
 
   private void clearToc() {
-    NodeCollection<StructuredDocumentTag> structuredDocumentTags = document.getFirstSection()
+    NodeCollection<StructuredDocumentTag> structuredDocumentTags = formattingProcessShareVar.getStudetDocument()
+        .getFirstSection()
         .getBody()
         .getChildNodes(NodeType.STRUCTURED_DOCUMENT_TAG, false);
     for (StructuredDocumentTag tag : structuredDocumentTags) {

@@ -29,17 +29,18 @@ import java.util.List;
 
 public class PostHandler {
 
-  private final Document document;
-
   private final List<AbstractFormatter> sortedFormatters;
+
+  private final FormattingProcessShareVar formattingProcessShareVar;
 
   /**
    * 原文的封面章节
    */
   private final List<Section> originCoverSections = new ArrayList<>();
 
-  public PostHandler(Document document, List<AbstractFormatter> sortedFormatters) {
-    this.document = document;
+  public PostHandler(FormattingProcessShareVar formattingProcessShareVar,
+      List<AbstractFormatter> sortedFormatters) {
+    this.formattingProcessShareVar = formattingProcessShareVar;
     this.sortedFormatters = sortedFormatters;
   }
 
@@ -53,7 +54,7 @@ public class PostHandler {
     settingFootnote();
     settingHeaderFooter();
     settingPageMargin();
-    new CoverHandler(document, originCoverSections).execute();
+    new CoverHandler2(formattingProcessShareVar).execute();
     updatePageNumber();
   }
 
@@ -65,9 +66,9 @@ public class PostHandler {
   public void updatePageNumber() throws Exception {
     //字段更新依赖：尤其是在更新目录页码时，toc.updatePageNumbers()可能依赖于文档的页面布局信息。
     // 如果在此之前没有计算或更新页面布局，尝试更新页码可能会失败。通常，在更新目录或其他引用页码的字段前，
-    // 使用Document.updatePageLayout()来确保页面布局是最新的。
+    // 使用formattingProcessShareVar.getStudetDocument().updatePageLayout()来确保页面布局是最新的。
     // error -> Invalid document model. Operation cannot be completed.
-    document.updatePageLayout();
+    formattingProcessShareVar.getStudetDocument().updatePageLayout();
     for (AbstractFormatter formatter : sortedFormatters) {
       if (formatter.sectionEnums() == SectionEnums.目录) {
         for (Section section : formatter.getSections()) {
@@ -92,7 +93,8 @@ public class PostHandler {
    * 设置脚注
    */
   public void settingFootnote() {
-    FootnoteOptions footnoteOptions = document.getFootnoteOptions();
+    FootnoteOptions footnoteOptions = formattingProcessShareVar.getStudetDocument()
+        .getFootnoteOptions();
     footnoteOptions.setRestartRule(FootnoteNumberingRule.RESTART_PAGE);
     footnoteOptions.setNumberStyle(NumberStyle.NUMBER_IN_CIRCLE);
   }
@@ -125,18 +127,18 @@ public class PostHandler {
     }
     // 封面的排序
     List<Section> allSortSections = new ArrayList<>();
-    for (Section section : document.getSections()) {
-      // 不在主要章节中的视为封面
+    for (Section section : formattingProcessShareVar.getStudetDocument().getSections()) {
       if (!mainSections.contains(section)) {
         originCoverSections.add(section);
+        // 不在主要章节中的视为封面，直接丢弃，使用配置好的封面模板
         // allSortSections.add(section);
       }
     }
     allSortSections.addAll(mainSections);
-    document.getSections().clear();
+    formattingProcessShareVar.getStudetDocument().getSections().clear();
     for (Section section : allSortSections) {
       section.getPageSetup().clearFormatting();
-      document.getSections().add(section);
+      formattingProcessShareVar.getStudetDocument().getSections().add(section);
     }
   }
 
