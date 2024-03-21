@@ -6,6 +6,7 @@ import {reactive} from 'vue';
 import CrudPage from '@/components/crud-page/index.vue';
 import {usePage, useRemove} from '@/hooks';
 import {formattingTaskApi} from "@/api/formatter";
+import {fileApi} from "@/api/system";
 import {handleAddUpdate} from './handler';
 
 const TASK_STATUS = {
@@ -27,6 +28,16 @@ const pageHook = usePage<any>({
 });
 
 const {removeSignal} = useRemove<string>(formattingTaskApi.remove, pageHook.loadData);
+
+async function handleDownload(row: any) {
+  const data = await fileApi.download(row.resultDoc);
+  const url = window.URL.createObjectURL(data);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = row.originDoc;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
 
 const columns = [
   {
@@ -78,7 +89,7 @@ const columns = [
     cell: (_, {row}) => (
         <>
           <Space>
-            <Link theme="primary" onClick={() => handleAddUpdate(row, pageHook.loadData)}>
+            <Link theme="primary" onClick={() => handleDownload(row)}>
               下载
             </Link>
             <Link theme="primary" onClick={() => handleAddUpdate(row, pageHook.loadData)}>

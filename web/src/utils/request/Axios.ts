@@ -135,7 +135,9 @@ export class VAxios {
     upload<T = any>(key: string, file: File, config: AxiosRequestConfig, options?: RequestOptions): Promise<T> {
         const formData: FormData = new FormData();
         formData.append(key, file);
-        formData.append("data", JSON.stringify(config.data));
+        if (config.data) {
+            formData.append("data", JSON.stringify(config.data));
+        }
 
         return this.request(
             {
@@ -266,29 +268,29 @@ export class VAxios {
 
         return new Promise((resolve, reject) => {
             this.instance
-            .request<any, AxiosResponse<Result>>(!config.retryCount ? conf : config)
-            .then((res: AxiosResponse<Result>) => {
-                if (transformRequestHook && isFunction(transformRequestHook)) {
-                    try {
-                        const ret = transformRequestHook(res, opt);
-                        resolve(ret);
-                    } catch (err) {
-                        reject(err || new Error('请求错误!'));
+                .request<any, AxiosResponse<Result>>(!config.retryCount ? conf : config)
+                .then((res: AxiosResponse<Result>) => {
+                    if (transformRequestHook && isFunction(transformRequestHook)) {
+                        try {
+                            const ret = transformRequestHook(res, opt);
+                            resolve(ret);
+                        } catch (err) {
+                            reject(err || new Error('请求错误!'));
+                        }
+                        return;
                     }
-                    return;
-                }
-                resolve(res as unknown as Promise<T>);
-            })
-            .catch((e: Error | AxiosError) => {
-                if (requestCatchHook && isFunction(requestCatchHook)) {
-                    reject(requestCatchHook(e, opt));
-                    return;
-                }
-                if (axios.isAxiosError(e)) {
-                    // 在这里重写Axios的错误信息
-                }
-                reject(e);
-            });
+                    resolve(res as unknown as Promise<T>);
+                })
+                .catch((e: Error | AxiosError) => {
+                    if (requestCatchHook && isFunction(requestCatchHook)) {
+                        reject(requestCatchHook(e, opt));
+                        return;
+                    }
+                    if (axios.isAxiosError(e)) {
+                        // 在这里重写Axios的错误信息
+                    }
+                    reject(e);
+                });
         });
     }
 }

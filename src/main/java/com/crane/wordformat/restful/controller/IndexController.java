@@ -1,10 +1,14 @@
 package com.crane.wordformat.restful.controller;
 
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import com.aspose.words.Document;
 import com.aspose.words.SaveFormat;
 import com.crane.wordformat.formatter.factory.FormatterFactory;
 import com.crane.wordformat.formatter.global.FormattingProcessShareVar;
 import com.crane.wordformat.restful.dto.FormatProcessDTO;
+import com.crane.wordformat.restful.entity.CoverFormPO;
 import com.crane.wordformat.restful.entity.FormatConfigPO;
 import com.crane.wordformat.restful.entity.FormattingTaskPO;
 import com.crane.wordformat.restful.enums.FormattingTaskStatusEnum;
@@ -12,8 +16,15 @@ import com.crane.wordformat.restful.global.RestResponse;
 import com.crane.wordformat.restful.mapper.CoverFormMapper;
 import com.crane.wordformat.restful.mapper.FormatConfigMapper;
 import com.crane.wordformat.restful.mapper.FormattingTaskMapper;
+import com.crane.wordformat.restful.utils.FilePathUtil;
+import com.crane.wordformat.restful.utils.MinioClientUtil;
+import io.minio.ObjectStat;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
@@ -36,16 +47,30 @@ public class IndexController {
 
   private final CoverFormMapper coverFormMapper;
 
+  private final MinioClientUtil minioClientUtil;
+
+  private final Map<String, Integer> FILE_TYPE = new HashMap() {{
+    put("docx", SaveFormat.DOCX);
+    put("doc", SaveFormat.DOC);
+  }};
+
   @PostMapping("/formatting")
   public RestResponse upload(@RequestParam("file") MultipartFile multipartFile,
       @RequestPart("data") FormatProcessDTO formatProcessDTO)
       throws Exception {
     FormatConfigPO formatConfigPO = formatConfigMapper.selectById(
         formatProcessDTO.getFormatConfigId());
+
+    CoverFormPO zhCoverFormPO = coverFormMapper.selectById(formatProcessDTO.getZhCover().getId());
     formatProcessDTO.getZhCover()
-        .setCoverFormPO(coverFormMapper.selectById(formatProcessDTO.getZhCover().getId()));
+        .setDocument(new Document(minioClientUtil.getObject(zhCoverFormPO.getCoverTemplateUrl())))
+        .setCoverFormPO(zhCoverFormPO);
+
+    CoverFormPO enCoverFormPO = coverFormMapper.selectById(formatProcessDTO.getEnCover().getId());
     formatProcessDTO.getEnCover()
-        .setCoverFormPO(coverFormMapper.selectById(formatProcessDTO.getEnCover().getId()));
+        .setDocument(new Document(minioClientUtil.getObject(enCoverFormPO.getCoverTemplateUrl())))
+        .setCoverFormPO(enCoverFormPO);
+
     FormattingTaskPO po = new FormattingTaskPO();
     po.setOriginDoc(multipartFile.getOriginalFilename());
     po.setFormatConfigName(formatConfigPO.getName());
@@ -61,11 +86,17 @@ public class IndexController {
         formattingProcessShareVar.setFormatConfigPO(formatConfigPO);
         formattingProcessShareVar.setFormatProcessDTO(formatProcessDTO);
         FormatterFactory.excute(formattingProcessShareVar);
-        String path =
-            "D:\\work\\word-formatter\\storage-files\\result\\" + UUID.randomUUID()
-                + ".docx";
-        studentDocument.save(path, SaveFormat.DOCX);
-        po.setResultDoc(path);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        String extName = FileUtil.extName(multipartFile.getOriginalFilename());
+        studentDocument.save(outputStream,
+            FILE_TYPE.get(extName));
+
+        ObjectStat objectStat = minioClientUtil.putObject(
+            FilePathUtil.build(extName, "formatted-result",
+                DateUtil.format(DateTime.now(), "yyyy/MM/dd"),
+                UUID.randomUUID().toString()),
+            new ByteArrayInputStream(outputStream.toByteArray()));
+        po.setResultDoc(objectStat.name());
         po.setTotalTimeSpent(
             Duration.between(po.getCreatedTime(), LocalDateTime.now()).getSeconds());
         po.setStatus(FormattingTaskStatusEnum.SUCCESS.getValue());

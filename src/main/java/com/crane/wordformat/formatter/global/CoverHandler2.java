@@ -1,10 +1,10 @@
 package com.crane.wordformat.formatter.global;
 
+import com.aspose.words.BreakType;
 import com.aspose.words.Document;
 import com.aspose.words.DocumentBuilder;
 import com.aspose.words.ImportFormatMode;
 import com.crane.wordformat.restful.dto.FormatProcessDTO.Cover;
-import com.crane.wordformat.restful.entity.CoverFormPO;
 
 public class CoverHandler2 {
 
@@ -14,10 +14,9 @@ public class CoverHandler2 {
     this.formattingProcessShareVar = formattingProcessShareVar;
   }
 
-  private Document executeZh() throws Exception {
+  private Document executeZh() {
     Cover zhCover = this.formattingProcessShareVar.getFormatProcessDTO().getZhCover();
-    CoverFormPO coverFormPO = zhCover.getCoverFormPO();
-    Document coverDoc = new Document(coverFormPO.getCoverTemplateUrl());
+    Document coverDoc = zhCover.getDocument();
     DocumentBuilder documentBuilder = new DocumentBuilder(coverDoc);
     zhCover.getForm().forEach((k, v) -> {
       try {
@@ -30,10 +29,9 @@ public class CoverHandler2 {
     return coverDoc;
   }
 
-  private Document executeEn() throws Exception {
+  private Document executeEn() {
     Cover enCover = this.formattingProcessShareVar.getFormatProcessDTO().getEnCover();
-    CoverFormPO coverFormPO = enCover.getCoverFormPO();
-    Document coverDoc = new Document(coverFormPO.getCoverTemplateUrl());
+    Document coverDoc = enCover.getDocument();
     DocumentBuilder documentBuilder = new DocumentBuilder(coverDoc);
     enCover.getForm().forEach((k, v) -> {
       try {
@@ -47,15 +45,11 @@ public class CoverHandler2 {
   }
 
   public void execute() throws Exception {
-    if (true) {
-      return;
-    }
     Document document = this.formattingProcessShareVar.getStudetDocument();
-    //fixme 两个封面加上，中文封面没有移到最前面
-    document.appendDocument(this.executeZh(), ImportFormatMode.KEEP_SOURCE_FORMATTING);
-    document.getSections().insert(0, document.getLastSection());
-    document.updatePageLayout();
-    document.appendDocument(this.executeEn(), ImportFormatMode.KEEP_SOURCE_FORMATTING);
-    document.getSections().insert(0, document.getLastSection());
+    DocumentBuilder documentBuilder = new DocumentBuilder(document);
+    documentBuilder.moveToDocumentStart();
+    documentBuilder.insertDocument(this.executeZh(), ImportFormatMode.KEEP_SOURCE_FORMATTING);
+    documentBuilder.insertDocument(this.executeEn(), ImportFormatMode.KEEP_SOURCE_FORMATTING);
+    documentBuilder.insertBreak(BreakType.SECTION_BREAK_NEW_PAGE);
   }
 }

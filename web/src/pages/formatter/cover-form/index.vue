@@ -59,6 +59,14 @@ const columns = [
     cell: (_, {row}) => (
         <>
           <Space>
+            <Link theme="primary" onClick={() => {
+            }}>
+              预览
+            </Link>
+            <Link theme="primary" onClick={() => {
+            }}>
+              下载
+            </Link>
             <Link theme="primary" onClick={() => handleAddUpdate(row, pageHook.loadData)}>
               编辑
             </Link>

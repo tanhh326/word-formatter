@@ -68,6 +68,19 @@
       <groupId>cn.hutool</groupId>
       <version>5.8.26</version>
     </dependency>
+
+    <dependency>
+      <groupId>io.minio</groupId>
+      <artifactId>minio</artifactId>
+      <version>7.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>3.14.9</version>
+      <scope>compile</scope>
+    </dependency>
+
   </dependencies>
   <description>word-formatter</description>
   <groupId>com.example</groupId>
