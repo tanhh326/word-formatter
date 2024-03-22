@@ -27,8 +27,9 @@ const {removeSignal} = useRemove<string>(coverFormApi.remove, pageHook.loadData)
 async function preview(row: any) {
   const data = await fileApi.doc2pdf(row.coverTemplateUrl);
   const url = URL.createObjectURL(new Blob([data], {type: "application/pdf"}));
+  console.log(url);
   // todo 此处改为弹窗的形式展示 iframe pdf
-  window.open(url);
+  // window.open(url);
 }
 
 const columns = [
