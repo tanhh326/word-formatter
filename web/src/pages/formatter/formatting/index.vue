@@ -128,19 +128,21 @@ const setup2FormRef = ref();
 
 async function changeSetup(type: "next" | "pre") {
   let able = true;
-  switch (current.value) {
-    case 0:
-      break;
-    case 1:
-      if ((await setup2FormRef.value.validate()) === true) {
-        setup2.value.dynamicCoverForm.zh = (await coverFormApi.getById(submitForm.value.zhCover.id)).form;
-        setup2.value.dynamicCoverForm.en = (await coverFormApi.getById(submitForm.value.enCover.id)).form;
-      } else {
-        able = false;
-      }
-      break;
-    case 2:
-      break;
+  if (type === "next") {
+    switch (current.value) {
+      case 0:
+        break;
+      case 1:
+        if ((await setup2FormRef.value.validate()) === true) {
+          setup2.value.dynamicCoverForm.zh = (await coverFormApi.getById(submitForm.value.zhCover.id)).form;
+          setup2.value.dynamicCoverForm.en = (await coverFormApi.getById(submitForm.value.enCover.id)).form;
+        } else {
+          able = false;
+        }
+        break;
+      case 2:
+        break;
+    }
   }
   if (able) {
     if (type === "next") {
@@ -219,12 +221,12 @@ async function changeSetup(type: "next" | "pre") {
     <t-button v-if="current" size="small" theme="default" variant="base"
               @click="changeSetup('pre')">上一步
     </t-button>
-    <t-button v-if="current === 2" size="small" variant="base" @click="handleFormat">执行
+    <t-button v-if="current === 2" :loading="loading" size="small" variant="base" @click="handleFormat">执行
     </t-button>
     <t-button v-else size="small" variant="base" @click="changeSetup('next')">下一步
     </t-button>
     <div></div>
-    <t-space style="margin: 14px 0">
+    <t-space v-if="false" style="margin: 14px 0">
       <t-button theme="default" @click="handleExport">导出配置</t-button>
       <t-button theme="default" @click="handleCopy">复制配置</t-button>
       <t-upload v-model="uploadFiles" :request-method="requestMethod"/>

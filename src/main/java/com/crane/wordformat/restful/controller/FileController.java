@@ -1,13 +1,18 @@
 package com.crane.wordformat.restful.controller;
 
 import cn.hutool.core.io.FileUtil;
+import com.aspose.words.Document;
+import com.aspose.words.SaveFormat;
 import com.crane.wordformat.restful.resp.UploadFileResp;
 import com.crane.wordformat.restful.utils.FilePathUtil;
 import com.crane.wordformat.restful.utils.MinioClientUtil;
 import io.minio.ObjectStat;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,5 +41,15 @@ public class FileController {
     return new UploadFileResp().setPath(objectStat.name())
         .setLength(objectStat.length())
         .setCreatedTime(objectStat.createdTime().toLocalDateTime());
+  }
+
+  @GetMapping("/doc2pdf")
+  public ResponseEntity<byte[]> doc2pdf(@RequestParam String path)
+      throws Exception {
+    InputStream inputStream = minioClientUtil.getObject(path);
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    new Document(inputStream).save(byteArrayOutputStream,
+        SaveFormat.PDF);
+    return ResponseEntity.ok(byteArrayOutputStream.toByteArray());
   }
 }

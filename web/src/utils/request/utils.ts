@@ -2,6 +2,7 @@ import isObject from 'lodash/isObject';
 import isString from 'lodash/isString';
 import type {PageRequest, PageResponse} from '@/types/globals';
 import {request} from '@/utils/request';
+import qs from "qs";
 
 const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
@@ -88,6 +89,11 @@ export function generateBasicApi<
             return request.get<Response[]>({
                 url: `${path}`,
                 params,
+                paramsSerializer: (params) => {
+                    return qs.stringify(params, {
+                        allowDots: true
+                    })
+                }
             });
         },
         getById: function (id: string) {

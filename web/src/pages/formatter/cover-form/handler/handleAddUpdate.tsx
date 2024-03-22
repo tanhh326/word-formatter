@@ -1,6 +1,16 @@
 import cloneDeep from 'lodash/cloneDeep';
-import type {FormInstanceFunctions, FormRule} from 'tdesign-vue-next';
-import {DialogPlugin, Form, FormItem, Input, MessagePlugin, Upload} from 'tdesign-vue-next';
+import type {FormInstanceFunctions, FormRule, PrimaryTableCol} from 'tdesign-vue-next';
+import {
+    Button,
+    DialogPlugin,
+    Form,
+    FormItem,
+    Input,
+    MessagePlugin,
+    PrimaryTable,
+    Space,
+    Upload
+} from 'tdesign-vue-next';
 import {reactive, ref} from 'vue';
 import {coverFormApi} from "@/api/formatter";
 import {fileApi} from "@/api/system";
@@ -14,9 +24,32 @@ const rules: Record<string, Array<FormRule>> = {
 export function handleAddUpdate<R extends Record<string, any>>(row: R | null, callBack: Function) {
     const formRef = ref<FormInstanceFunctions>();
     const isAdd = !row;
-    const form = reactive<any>(row ? cloneDeep<R>(row) : {});
+    const form = reactive<any>(row ? cloneDeep<R>(row) : {form: [{}]});
 
     const uploadFile = ref([]);
+
+    const formColumn = ref<PrimaryTableCol<any>[]>([
+        {
+            title: '标签',
+            align: 'center',
+            colKey: 'label',
+            cell: (h, {row}) => <Input v-model={row.label}></Input>
+        },
+        {
+            title: '变量',
+            align: 'center',
+            colKey: 'key',
+            cell: (h, {row}) => <Input v-model={row.key}></Input>
+        },
+        {
+            title: '操作',
+            align: 'center',
+            colKey: 'key',
+            cell: (h, {row, rowIndex}) => <Button theme='danger' onClick={() => {
+                form.form.splice(rowIndex)
+            }}>删除</Button>
+        }
+    ])
 
     async function requestMethod(file) {
         const {path} = await fileApi.upload(file.raw, {prefix: `/cover-temp`});
@@ -42,9 +75,15 @@ export function handleAddUpdate<R extends Record<string, any>>(row: R | null, ca
                     <FormItem name="name" label="名称">
                         <Input v-model={form.name}/>
                     </FormItem>
-                    {isAdd && <FormItem name="coverTemplateUrl" label="封面模板">
+                    <FormItem name="coverTemplateUrl" label="封面模板">
                         <Upload accept=".doc,.docx" v-model={uploadFile.value} requestMethod={requestMethod}/>
-                    </FormItem>}
+                    </FormItem>
+                    <FormItem label="模板表单">
+                        <Space direction={"vertical"}>
+                            <Button onClick={() => form.form.push({})}>新增</Button>
+                            <PrimaryTable bordered={true} columns={formColumn.value} data={form.form}></PrimaryTable>
+                        </Space>
+                    </FormItem>
                 </Form>
             );
         },

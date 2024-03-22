@@ -18,3 +18,16 @@ export function download(filePath: string) {
         }
     );
 }
+
+export function doc2pdf(filePath: string) {
+    return request.get({
+            url: path + "/doc2pdf",
+            responseType: 'arraybuffer',
+            timeout: 10000 * 1000,
+            params: {path: filePath},
+        },
+        {
+            isTransformResponse: false
+        }
+    );
+}

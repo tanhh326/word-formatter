@@ -34,7 +34,7 @@ async function handleDownload(row: any) {
   const url = window.URL.createObjectURL(data);
   const a = document.createElement("a");
   a.href = url;
-  a.download = row.originDoc;
+  a.download = "已排版-" + row.originDoc;
   a.click();
   window.URL.revokeObjectURL(url);
 }

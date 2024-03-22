@@ -6,6 +6,7 @@ import {reactive} from 'vue';
 import CrudPage from '@/components/crud-page/index.vue';
 import {usePage, useRemove} from '@/hooks';
 import {coverFormApi} from "@/api/formatter";
+import {fileApi} from "@/api/system";
 import {handleAddUpdate} from './handler';
 
 const defaultQueryForm = {code: '', deptId: '', name: ''};
@@ -22,6 +23,13 @@ const pageHook = usePage<any>({
 });
 
 const {removeSignal} = useRemove<string>(coverFormApi.remove, pageHook.loadData);
+
+async function preview(row: any) {
+  const data = await fileApi.doc2pdf(row.coverTemplateUrl);
+  const url = URL.createObjectURL(new Blob([data], {type: "application/pdf"}));
+  // todo 此处改为弹窗的形式展示 iframe pdf
+  window.open(url);
+}
 
 const columns = [
   {
@@ -59,8 +67,7 @@ const columns = [
     cell: (_, {row}) => (
         <>
           <Space>
-            <Link theme="primary" onClick={() => {
-            }}>
+            <Link theme="primary" onClick={() => preview(row)}>
               预览
             </Link>
             <Link theme="primary" onClick={() => {
