@@ -11,6 +11,7 @@ import jakarta.persistence.Entity;
 import java.util.List;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.experimental.FieldNameConstants;
 
 /**
  * 封面表单
@@ -19,6 +20,7 @@ import lombok.experimental.Accessors;
 @Entity
 @Data
 @Accessors(chain = true)
+@FieldNameConstants
 public class CoverFormPO extends BasePo {
 
   private String name;

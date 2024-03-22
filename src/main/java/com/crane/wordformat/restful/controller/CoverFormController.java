@@ -2,11 +2,9 @@ package com.crane.wordformat.restful.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.crane.wordformat.restful.entity.CoverFormPO;
 import com.crane.wordformat.restful.mapper.CoverFormMapper;
-import com.crane.wordformat.restful.repository.CoverFormRepository;
 import com.crane.wordformat.restful.resp.BaseResp;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +25,6 @@ public class CoverFormController {
   @Autowired
   private CoverFormMapper coverFormMapper;
 
-  @Autowired
-  private CoverFormRepository coverFormRepository;
-
   @PostMapping
   public int add(@RequestBody CoverFormPO coverFormPO) {
     return coverFormMapper.insert(coverFormPO);
@@ -47,10 +42,10 @@ public class CoverFormController {
 
   // fixme 最新版本分页有问题，先将就用吧
   @GetMapping
-  public IPage list(PageDTO pageDTO, BaseResp baseResp, Pageable pageable,
+  public PageDTO<CoverFormPO> list(PageDTO<CoverFormPO> pageDTO, BaseResp baseResp,
+      Pageable pageable,
       CoverFormPO coverFormPO) {
     pageDTO.addOrder(baseResp.getOrders());
-    coverFormRepository.findAll(pageable);
     return coverFormMapper.selectPage(pageDTO, new QueryWrapper<>());
   }
 
