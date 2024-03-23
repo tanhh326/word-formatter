@@ -20,6 +20,8 @@ public class FormattingTaskPO extends BasePo {
 
   private String formatConfigName;
 
+  private Double resultDocSize;
+
   private Long totalTimeSpent;
 
   /**

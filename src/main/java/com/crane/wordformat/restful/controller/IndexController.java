@@ -2,6 +2,7 @@ package com.crane.wordformat.restful.controller;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.io.FileUtil;
 import com.aspose.words.Document;
 import com.aspose.words.SaveFormat;
@@ -106,13 +107,13 @@ public class IndexController {
                 UUID.randomUUID().toString()),
             new ByteArrayInputStream(outputStream.toByteArray()));
         po.setResultDoc(objectStat.name());
+        po.setResultDocSize((objectStat.length() / 1024.0 / 1024.0));
         po.setTotalTimeSpent(
             Duration.between(po.getCreatedTime(), LocalDateTime.now()).getSeconds());
         po.setStatus(FormattingTaskStatusEnum.SUCCESS.getValue());
       } catch (Exception e) {
         e.printStackTrace();
-        // todo 需要改成保存完整堆栈日志
-        po.setErrorMsg(e.getMessage());
+        po.setErrorMsg(ExceptionUtil.stacktraceToString(e));
         po.setStatus(FormattingTaskStatusEnum.FAIL.getValue());
       } finally {
         formattingTaskMapper.updateById(po);

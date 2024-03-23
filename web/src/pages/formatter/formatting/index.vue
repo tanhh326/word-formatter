@@ -197,7 +197,7 @@ async function changeSetup(type: "next" | "pre") {
           </t-form-item>
         </t-form>
       </div>
-      <div v-show="current===2">
+      <div v-show="current===2" style="width: 100%">
         <t-tabs v-model="setup2.currTab">
           <t-tab-panel label="中文" value="1">
             <t-form style="margin-top: 14px">
@@ -260,6 +260,7 @@ async function changeSetup(type: "next" | "pre") {
   justify-content: center;
   height: 400px;
   overflow-y: auto;
+  margin-bottom: 14px;
 }
 </style>
 

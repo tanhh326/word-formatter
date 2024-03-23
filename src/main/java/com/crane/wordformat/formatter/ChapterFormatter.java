@@ -276,7 +276,7 @@ public class ChapterFormatter extends AbstractFormatter {
     table.setPreferredWidth(PreferredWidth.fromPercent(100));
     table.clearBorders();
     for (Row row : table.getRows()) {
-      for (Cell cell : row) {
+      for (Cell cell : row.getCells()) {
         cell.getCellFormat().getBorders().clearFormatting();
       }
     }
