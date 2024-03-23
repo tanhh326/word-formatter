@@ -58,29 +58,38 @@ public class IndexController {
   public RestResponse upload(@RequestParam("file") MultipartFile multipartFile,
       @RequestPart("data") FormatProcessDTO formatProcessDTO)
       throws Exception {
-    FormatConfigPO formatConfigPO = formatConfigMapper.selectById(
-        formatProcessDTO.getFormatConfigId());
 
-    CoverFormPO zhCoverFormPO = coverFormMapper.selectById(formatProcessDTO.getZhCover().getId());
-    formatProcessDTO.getZhCover()
-        .setDocument(new Document(minioClientUtil.getObject(zhCoverFormPO.getCoverTemplateUrl())))
-        .setCoverFormPO(zhCoverFormPO);
-
-    CoverFormPO enCoverFormPO = coverFormMapper.selectById(formatProcessDTO.getEnCover().getId());
-    formatProcessDTO.getEnCover()
-        .setDocument(new Document(minioClientUtil.getObject(enCoverFormPO.getCoverTemplateUrl())))
-        .setCoverFormPO(enCoverFormPO);
-
+    Document studentDocument = new Document(multipartFile.getInputStream());
     FormattingTaskPO po = new FormattingTaskPO();
     po.setOriginDoc(multipartFile.getOriginalFilename());
-    po.setFormatConfigName(formatConfigPO.getName());
     po.setCreatedTime(LocalDateTime.now());
     po.setStatus(FormattingTaskStatusEnum.PROCESSING.getValue());
     formattingTaskMapper.insert(po);
-    Document studentDocument = new Document(multipartFile.getInputStream());
 
     CompletableFuture.runAsync(() -> {
       try {
+        FormatConfigPO formatConfigPO = formatConfigMapper.selectById(
+            formatProcessDTO.getFormatConfigId());
+
+        formatProcessDTO.setInstructionsDissertationAuthorizationDoc(
+            new Document(minioClientUtil.getObject(formatProcessDTO.getDegree().getPath())));
+
+        CoverFormPO zhCoverFormPO = coverFormMapper.selectById(
+            formatProcessDTO.getZhCover().getId());
+        formatProcessDTO.getZhCover()
+            .setDocument(
+                new Document(minioClientUtil.getObject(zhCoverFormPO.getCoverTemplateUrl())))
+            .setCoverFormPO(zhCoverFormPO);
+
+        CoverFormPO enCoverFormPO = coverFormMapper.selectById(
+            formatProcessDTO.getEnCover().getId());
+        formatProcessDTO.getEnCover()
+            .setDocument(
+                new Document(minioClientUtil.getObject(enCoverFormPO.getCoverTemplateUrl())))
+            .setCoverFormPO(enCoverFormPO);
+
+        po.setFormatConfigName(formatConfigPO.getName());
+
         FormattingProcessShareVar formattingProcessShareVar = new FormattingProcessShareVar(
             studentDocument);
         formattingProcessShareVar.setFormatConfigPO(formatConfigPO);

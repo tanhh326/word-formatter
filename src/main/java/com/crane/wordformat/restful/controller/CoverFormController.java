@@ -5,10 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.crane.wordformat.restful.entity.CoverFormPO;
 import com.crane.wordformat.restful.mapper.CoverFormMapper;
-import com.crane.wordformat.restful.resp.BaseResp;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,10 +40,7 @@ public class CoverFormController {
 
   // fixme 最新版本分页有问题，先将就用吧
   @GetMapping
-  public PageDTO<CoverFormPO> list(PageDTO<CoverFormPO> pageDTO, BaseResp baseResp,
-      Pageable pageable,
-      CoverFormPO coverFormPO) {
-    pageDTO.addOrder(baseResp.getOrders());
+  public PageDTO<CoverFormPO> list(PageDTO<CoverFormPO> pageDTO, CoverFormPO coverFormPO) {
     return coverFormMapper.selectPage(pageDTO, new QueryWrapper<>());
   }
 

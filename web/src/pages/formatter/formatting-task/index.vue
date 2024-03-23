@@ -19,6 +19,12 @@ const queryForm = reactive(cloneDeep(defaultQueryForm));
 
 const pageHook = usePage<any>({
   api: formattingTaskApi.list,
+  defaultSort: [
+    {
+      sortBy: "createdTime",
+      descending: true
+    }
+  ],
   async query(reset: boolean) {
     if (reset) {
       Object.assign(queryForm, cloneDeep(defaultQueryForm));
