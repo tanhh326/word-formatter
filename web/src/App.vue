@@ -1,13 +1,14 @@
 <template>
   <t-config-provider :global-config="getComponentsLocale">
-    <router-view :key="locale" :class="[mode]" />
+    <router-view :key="locale" :class="[mode]"/>
   </t-config-provider>
 </template>
-<script setup lang="ts">
-import { computed } from 'vue';
+<script lang="ts" setup>
+import {computed} from 'vue';
 
-import { useLocale } from '@/locales/useLocale';
-import { useSettingStore } from '@/store';
+import {useLocale} from '@/locales/useLocale';
+import {useSettingStore} from '@/store';
+import {useTaskWebsocket} from "@/hooks";
 
 const store = useSettingStore();
 
@@ -15,7 +16,9 @@ const mode = computed(() => {
   return store.displayMode;
 });
 
-const { getComponentsLocale, locale } = useLocale();
+const {getComponentsLocale, locale} = useLocale();
+
+useTaskWebsocket();
 </script>
 <style lang="less" scoped>
 #nprogress .bar {
