@@ -408,27 +408,6 @@ class ChapterFormatterTest {
   }
 
   @Test
-  public void test22() throws Exception {
-    Document document = new Document("C:\\Users\\thh\\Desktop\\参考文献-测试.docx");
-    ObjectMapper objectMapper = new ObjectMapper();
-    List<StyleConfigDto> styleConfigDtos = objectMapper.readValue(
-        new File("src/main/resources/static/config.json"),
-        new TypeReference<>() {
-        });
-    FormattingProcessShareVar formattingProcessShareVar = new FormattingProcessShareVar(
-        styleConfigDtos, document);
-    ReferencesFormatter referencesFormatter = new ReferencesFormatter(formattingProcessShareVar);
-    ParagraphCollection paragraphs = document.getFirstSection().getBody().getParagraphs();
-    for (Paragraph paragraph : paragraphs) {
-      referencesFormatter.confirmTitle(paragraph);
-    }
-    referencesFormatter.formatTitle();
-    referencesFormatter.formatBody();
-    // document.updatePageLayout();
-    document.save("src/main/resources/docx/templates/result.docx", SaveFormat.DOCX);
-  }
-
-  @Test
   public void test23() throws Exception {
     Document document = new Document("C:\\Users\\thh\\Desktop\\参考文献-测试.docx");
     int i = 0;
