@@ -60,7 +60,7 @@ public class IndexController {
       @RequestPart("data") FormatProcessDTO formatProcessDTO)
       throws Exception {
 
-    Document studentDocument = new Document(multipartFile.getInputStream());
+   // 主线程只执行插入日志操作
     FormattingTaskPO po = new FormattingTaskPO();
     po.setOriginDoc(multipartFile.getOriginalFilename());
     po.setCreatedTime(LocalDateTime.now());
@@ -69,6 +69,9 @@ public class IndexController {
 
     CompletableFuture.runAsync(() -> {
       try {
+        // 异步获取文件流创建Document对象
+        Document studentDocument = new Document(multipartFile.getInputStream());
+
         FormatConfigPO formatConfigPO = formatConfigMapper.selectById(
             formatProcessDTO.getFormatConfigId());
 
