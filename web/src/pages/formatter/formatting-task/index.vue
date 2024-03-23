@@ -1,18 +1,28 @@
 <script lang="tsx" setup>
 import cloneDeep from 'lodash/cloneDeep';
-import {FormItem, Input, Link, Space, Tag} from 'tdesign-vue-next';
-import {reactive} from 'vue';
+import {DialogPlugin, FormItem, Input, Link, Loading, Space, Tag} from 'tdesign-vue-next';
+import {reactive, ref} from 'vue';
 
 import CrudPage from '@/components/crud-page/index.vue';
 import {usePage, useRemove} from '@/hooks';
 import {formattingTaskApi} from "@/api/formatter";
 import {fileApi} from "@/api/system";
 import {handleAddUpdate} from './handler';
+import {toFixed} from "ol/math";
+
+function viewError(row: any) {
+  DialogPlugin({
+    header: '错误日志',
+    body: () => row.errorMsg,
+    width: '50%',
+    footer: false,
+  })
+}
 
 const TASK_STATUS = {
-  "1": <Tag theme="success" variant="light-outline">成功</Tag>,
-  "0": <Tag theme="danger" variant="light-outline">失败</Tag>,
-  "2": <Tag theme="primary" variant="light-outline">执行中</Tag>
+  "1": (row: any) => <Tag theme="success" variant="light-outline">成功</Tag>,
+  "0": (row: any) => <Link underline theme="danger" onClick={() => viewError(row)}>失败</Link>,
+  "2": (row: any) => <Tag theme="primary" variant="light-outline">执行中</Tag>
 }
 const defaultQueryForm = {code: '', deptId: '', name: ''};
 const queryForm = reactive(cloneDeep(defaultQueryForm));
@@ -35,7 +45,10 @@ const pageHook = usePage<any>({
 
 const {removeSignal} = useRemove<string>(formattingTaskApi.remove, pageHook.loadData);
 
-async function handleDownload(row: any) {
+const downloadLoading = ref([]);
+
+async function handleDownload(row: any, rowIndex: number) {
+  downloadLoading.value[rowIndex] = true;
   const data = await fileApi.download(row.resultDoc);
   const url = window.URL.createObjectURL(data);
   const a = document.createElement("a");
@@ -43,19 +56,26 @@ async function handleDownload(row: any) {
   a.download = "已排版-" + row.originDoc;
   a.click();
   window.URL.revokeObjectURL(url);
+  downloadLoading.value[rowIndex] = false;
 }
+
 
 const columns = [
   {
     title: '编号',
     colKey: 'id',
     align: 'center',
-    width: 200
+    width: 200,
+    ellipsis: true,
+    fixed: 'left'
   },
   {
     title: '原文',
     colKey: 'originDoc',
     align: 'center',
+    ellipsis: true,
+    width: 200,
+    fixed: 'left',
     cell: (_, {row}) => <Link theme="primary" underline>{row.originDoc}</Link>
   },
   {
@@ -67,13 +87,13 @@ const columns = [
     title: '状态',
     colKey: 'status',
     align: 'center',
-    cell: (_, {row}) => TASK_STATUS[row.status]
+    cell: (_, {row}) => TASK_STATUS[row.status]?.(row)
   },
   {
-    title: '结果',
-    colKey: 'resultDoc',
+    title: '结果大小(兆)',
+    colKey: 'resultDocSize',
     align: 'center',
-    display: false,
+    cell: (_, {row}) => toFixed(row.resultDocSize, 2)
   },
   {
     title: '创建时间',
@@ -92,12 +112,14 @@ const columns = [
     title: '操作',
     colKey: 'operate',
     align: 'center',
-    cell: (_, {row}) => (
+    cell: (_, {row, rowIndex}) => (
         <>
           <Space>
-            <Link theme="primary" onClick={() => handleDownload(row)}>
-              下载
-            </Link>
+            {row.status == 1 &&
+            downloadLoading.value[rowIndex] ? <Loading size="small" text="下载中..."/> :
+                <Link theme="primary" onClick={() => handleDownload(row, rowIndex)}>
+                  下载结果
+                </Link>}
             <Link theme="primary" onClick={() => handleAddUpdate(row, pageHook.loadData)}>
               编辑
             </Link>
