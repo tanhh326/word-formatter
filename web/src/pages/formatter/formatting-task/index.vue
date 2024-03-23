@@ -1,13 +1,12 @@
 <script lang="tsx" setup>
 import cloneDeep from 'lodash/cloneDeep';
-import {DialogPlugin, FormItem, Input, Link, Loading, Space, Tag} from 'tdesign-vue-next';
+import {DialogPlugin, FormItem, Input, Link, Loading, Select, Space, Tag} from 'tdesign-vue-next';
 import {reactive, ref} from 'vue';
 
 import CrudPage from '@/components/crud-page/index.vue';
 import {usePage, useRemove} from '@/hooks';
 import {formattingTaskApi} from "@/api/formatter";
 import {fileApi} from "@/api/system";
-import {handleAddUpdate} from './handler';
 import {toFixed} from "ol/math";
 
 function viewError(row: any) {
@@ -24,7 +23,14 @@ const TASK_STATUS = {
   "0": (row: any) => <Link underline theme="danger" onClick={() => viewError(row)}>失败</Link>,
   "2": (row: any) => <Tag theme="primary" variant="light-outline">执行中</Tag>
 }
-const defaultQueryForm = {code: '', deptId: '', name: ''};
+
+const STATUS_OPTIONS = [
+  {label: '成功', value: '1'},
+  {label: '失败', value: '0'},
+  {label: '执行中', value: '2'},
+]
+const defaultQueryForm = {originDoc: '', id: '', status: ''};
+
 const queryForm = reactive(cloneDeep(defaultQueryForm));
 
 const pageHook = usePage<any>({
@@ -82,6 +88,7 @@ const columns = [
     title: '总耗时(秒)',
     colKey: 'totalTimeSpent',
     align: 'center',
+    sorter: true,
   },
   {
     title: '状态',
@@ -93,7 +100,14 @@ const columns = [
     title: '结果大小(兆)',
     colKey: 'resultDocSize',
     align: 'center',
+    sorter: true,
     cell: (_, {row}) => toFixed(row.resultDocSize, 2)
+  },
+  {
+    title: '结果文件',
+    colKey: 'resultDoc',
+    align: 'center',
+    display: false,
   },
   {
     title: '创建时间',
@@ -115,14 +129,11 @@ const columns = [
     cell: (_, {row, rowIndex}) => (
         <>
           <Space>
-            {row.status == 1 &&
-            downloadLoading.value[rowIndex] ? <Loading size="small" text="下载中..."/> :
-                <Link theme="primary" onClick={() => handleDownload(row, rowIndex)}>
-                  下载结果
-                </Link>}
-            <Link theme="primary" onClick={() => handleAddUpdate(row, pageHook.loadData)}>
-              编辑
-            </Link>
+            {
+              downloadLoading.value[rowIndex] ? <Loading size="small" text="下载中..."/> :
+                  <Link theme="primary" disabled={row.status != 1} onClick={() => handleDownload(row, rowIndex)}>
+                    下载结果
+                  </Link>}
             <Link theme="danger" onClick={() => removeSignal(row.id)}>
               删除
             </Link>
@@ -135,11 +146,16 @@ const columns = [
 </script>
 
 <template>
-  <CrudPage :columns="columns" :hook="pageHook"
-            :on-add="() => handleAddUpdate(null, pageHook.loadData)">
+  <CrudPage :columns="columns" :hook="pageHook">
     <template #query-form-item>
-      <FormItem label="名称">
-        <Input v-model="queryForm.name"/>
+      <FormItem label="编号">
+        <Input v-model="queryForm.id"/>
+      </FormItem>
+      <FormItem label="原文">
+        <Input v-model="queryForm.originDoc"/>
+      </FormItem>
+      <FormItem label="状态">
+        <Select v-model="queryForm.status" :options="STATUS_OPTIONS"/>
       </FormItem>
     </template>
   </CrudPage>

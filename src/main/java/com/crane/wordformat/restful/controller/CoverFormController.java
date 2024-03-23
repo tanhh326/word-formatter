@@ -1,12 +1,13 @@
 package com.crane.wordformat.restful.controller;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.crane.wordformat.restful.entity.CoverFormPO;
 import com.crane.wordformat.restful.mapper.CoverFormMapper;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,7 +42,9 @@ public class CoverFormController {
   // fixme 最新版本分页有问题，先将就用吧
   @GetMapping
   public PageDTO<CoverFormPO> list(PageDTO<CoverFormPO> pageDTO, CoverFormPO coverFormPO) {
-    return coverFormMapper.selectPage(pageDTO, new QueryWrapper<>());
+    return coverFormMapper.selectPage(pageDTO,
+        new LambdaQueryWrapper<CoverFormPO>().like(StringUtils.hasText(coverFormPO.getName()),
+            CoverFormPO::getName, coverFormPO.getName()));
   }
 
   @GetMapping("{id}")

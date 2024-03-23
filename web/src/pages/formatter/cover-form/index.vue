@@ -1,7 +1,7 @@
 <script lang="tsx" setup>
 import cloneDeep from 'lodash/cloneDeep';
-import {FormItem, Input, Link, Space} from 'tdesign-vue-next';
-import {reactive} from 'vue';
+import {DialogPlugin, FormItem, Input, Link, Loading, Space} from 'tdesign-vue-next';
+import {reactive, ref} from 'vue';
 
 import CrudPage from '@/components/crud-page/index.vue';
 import {usePage, useRemove} from '@/hooks';
@@ -24,22 +24,28 @@ const pageHook = usePage<any>({
 
 const {removeSignal} = useRemove<string>(coverFormApi.remove, pageHook.loadData);
 
+const previewLoading = ref(false);
+
 async function preview(row: any) {
+  const url = ref("");
+  previewLoading.value = true;
+  DialogPlugin({
+    header: '预览',
+    body: () => <Loading loading={previewLoading.value}>
+      <iframe width='100%' height="500px" style="border:0" src={url.value}></iframe>
+    </Loading>,
+    width: '50%',
+    footer: false,
+  })
   const data = await fileApi.doc2pdf(row.coverTemplateUrl);
-  const url = URL.createObjectURL(new Blob([data], {type: "application/pdf"}));
-  // todo 此处改为弹窗的形式展示 iframe pdf
-  window.open(url);
+  url.value = URL.createObjectURL(new Blob([data], {type: "application/pdf"}));
+  previewLoading.value = false;
 }
 
 const columns = [
   {
     title: '名称',
     colKey: 'name',
-    align: 'center',
-  },
-  {
-    title: '封面',
-    colKey: 'coverPreviewUrl',
     align: 'center',
   },
   {

@@ -155,105 +155,102 @@ async function changeSetup(type: "next" | "pre") {
 </script>
 
 <template>
-  <div style="width: 40%;margin:auto">
-    <t-steps :current="current" class="steps-demos-extra" status="process">
-      <t-step-item content="上传文件" title="步骤1">
-      </t-step-item>
-      <t-step-item content="选择配置" title="步骤2">
-      </t-step-item>
-      <t-step-item content="设置封面" title="步骤3">
-      </t-step-item>
-    </t-steps>
-    <div class="step-form">
-      <div v-show="current==0">
-        <t-upload
-            v-model="uploadFiles" :abridge-name="[10, 8]"
-            :data="{ extra_data: 123, file_name: 'certificate' }"
-            :request-method="requestMethod"
-            draggable
-            theme="file"
-        />
+  <t-card>
+    <div style="width: 40%;margin:auto">
+      <t-steps :current="current" class="steps-demos-extra" status="process">
+        <t-step-item content="上传文件" title="步骤1">
+        </t-step-item>
+        <t-step-item content="选择配置" title="步骤2">
+        </t-step-item>
+        <t-step-item content="设置封面" title="步骤3">
+        </t-step-item>
+      </t-steps>
+      <div class="step-form">
+        <div v-show="current==0">
+          <t-upload
+              v-model="uploadFiles" :abridge-name="[10, 8]"
+              :data="{ extra_data: 123, file_name: 'certificate' }"
+              :request-method="requestMethod"
+              draggable
+              theme="file"
+          />
+        </div>
+        <div v-show="current==1">
+          <t-form ref="setup2FormRef" :data="submitForm" :rules="setup2.formRule" label-align="left"
+                  required-mark>
+            <t-form-item label="学位" name="degree">
+              <t-select v-model="submitForm.degree" :options="DEGREE_OPTIONS"></t-select>
+            </t-form-item>
+            <t-form-item label="配置" name="formatConfigId">
+              <t-select v-model="submitForm.formatConfigId"
+                        :options="optionContainer.formatConfig"></t-select>
+            </t-form-item>
+            <t-form-item label="中文封面" name="zhCover.id">
+              <t-select v-model="submitForm.zhCover.id"
+                        :options="optionContainer.coverForm"></t-select>
+            </t-form-item>
+            <t-form-item label="英文封面" name="enCover.id">
+              <t-select v-model="submitForm.enCover.id"
+                        :options="optionContainer.coverForm"></t-select>
+            </t-form-item>
+            <t-form-item label="参考文献顺序">
+              <t-switch v-model="submitForm.referencesOrderly"></t-switch>
+            </t-form-item>
+          </t-form>
+        </div>
+        <div v-show="current===2" style="width: 100%">
+          <t-tabs v-model="setup2.currTab">
+            <t-tab-panel label="中文" value="1">
+              <t-form style="margin-top: 14px">
+                <t-form-item v-for="(item,index) in setup2.dynamicCoverForm.zh"
+                             :key="index" :label="item.label">
+                  <t-textarea v-model="submitForm.zhCover.form[item.key]"></t-textarea>
+                </t-form-item>
+              </t-form>
+            </t-tab-panel>
+            <t-tab-panel label="英文" value="2">
+              <t-form style="margin-top: 14px">
+                <t-form-item v-for="(item,index) in setup2.dynamicCoverForm.en"
+                             :key="index" :label="item.label">
+                  <t-textarea v-model="submitForm.enCover.form[item.key]"></t-textarea>
+                </t-form-item>
+              </t-form>
+            </t-tab-panel>
+          </t-tabs>
+        </div>
       </div>
-      <div v-show="current==1">
-        <t-form ref="setup2FormRef" :data="submitForm" :rules="setup2.formRule" label-align="left"
-                required-mark>
-          <t-form-item label="学位" name="degree">
-            <t-select v-model="submitForm.degree" :options="DEGREE_OPTIONS"></t-select>
-          </t-form-item>
-          <t-form-item label="配置" name="formatConfigId">
-            <t-select v-model="submitForm.formatConfigId"
-                      :options="optionContainer.formatConfig"></t-select>
-          </t-form-item>
-          <t-form-item label="中文封面" name="zhCover.id">
-            <t-select v-model="submitForm.zhCover.id"
-                      :options="optionContainer.coverForm"></t-select>
-          </t-form-item>
-          <t-form-item label="英文封面" name="enCover.id">
-            <t-select v-model="submitForm.enCover.id"
-                      :options="optionContainer.coverForm"></t-select>
-          </t-form-item>
-          <t-form-item label="参考文献顺序">
-            <t-switch v-model="submitForm.referencesOrderly"></t-switch>
-          </t-form-item>
-        </t-form>
-      </div>
-      <div v-show="current===2" style="width: 100%">
-        <t-tabs v-model="setup2.currTab">
-          <t-tab-panel label="中文" value="1">
-            <t-form style="margin-top: 14px">
-              <t-form-item v-for="(item,index) in setup2.dynamicCoverForm.zh"
-                           :key="index" :label="item.label">
-                <t-textarea v-model="submitForm.zhCover.form[item.key]"></t-textarea>
-              </t-form-item>
-            </t-form>
-          </t-tab-panel>
-          <t-tab-panel label="英文" value="2">
-            <t-form style="margin-top: 14px">
-              <t-form-item v-for="(item,index) in setup2.dynamicCoverForm.en"
-                           :key="index" :label="item.label">
-                <t-textarea v-model="submitForm.enCover.form[item.key]"></t-textarea>
-              </t-form-item>
-            </t-form>
-          </t-tab-panel>
-        </t-tabs>
-      </div>
+      <t-button v-if="current" size="small" theme="default" variant="base"
+                @click="changeSetup('pre')">上一步
+      </t-button>
+      <t-button v-if="current === 2" :loading="loading" size="small" variant="base" @click="handleFormat">执行
+      </t-button>
+      <t-button v-else size="small" variant="base" @click="changeSetup('next')">下一步
+      </t-button>
+      <div></div>
+      <t-space v-if="false" style="margin: 14px 0">
+        <t-button theme="default" @click="handleExport">导出配置</t-button>
+        <t-button theme="default" @click="handleCopy">复制配置</t-button>
+        <t-upload v-model="uploadFiles" :request-method="requestMethod"/>
+        <t-button :loading="loading" @click="handleFormat">格式化</t-button>
+      </t-space>
+      <t-tabs v-if="false" v-model="currTab">
+        <t-tab-panel label="章节" value="1">
+          <t-table v-model:expandedRowKeys="expandedRowKeys" :columns="columns" :data="data"
+                   :expanded-row="expandedRow"
+                   :show-header="false"
+                   expand-icon
+                   row-key="desc"
+                   stripe>
+          </t-table>
+        </t-tab-panel>
+        <t-tab-panel label="页码页眉" value="2"></t-tab-panel>
+        <t-tab-panel label="全局设置" value="3"></t-tab-panel>
+      </t-tabs>
     </div>
-    <t-button v-if="current" size="small" theme="default" variant="base"
-              @click="changeSetup('pre')">上一步
-    </t-button>
-    <t-button v-if="current === 2" :loading="loading" size="small" variant="base" @click="handleFormat">执行
-    </t-button>
-    <t-button v-else size="small" variant="base" @click="changeSetup('next')">下一步
-    </t-button>
-    <div></div>
-    <t-space v-if="false" style="margin: 14px 0">
-      <t-button theme="default" @click="handleExport">导出配置</t-button>
-      <t-button theme="default" @click="handleCopy">复制配置</t-button>
-      <t-upload v-model="uploadFiles" :request-method="requestMethod"/>
-      <t-button :loading="loading" @click="handleFormat">格式化</t-button>
-    </t-space>
-    <t-tabs v-if="false" v-model="currTab">
-      <t-tab-panel label="章节" value="1">
-        <t-table v-model:expandedRowKeys="expandedRowKeys" :columns="columns" :data="data"
-                 :expanded-row="expandedRow"
-                 :show-header="false"
-                 expand-icon
-                 row-key="desc"
-                 stripe>
-        </t-table>
-      </t-tab-panel>
-      <t-tab-panel label="页码页眉" value="2"></t-tab-panel>
-      <t-tab-panel label="全局设置" value="3"></t-tab-panel>
-    </t-tabs>
-  </div>
+  </t-card>
 </template>
 
 <style scoped>
-#cesiumContainer {
-  width: 100vw;
-  height: 100vh;
-}
-
 .step-form {
   padding: 14px 0;
   display: flex;
