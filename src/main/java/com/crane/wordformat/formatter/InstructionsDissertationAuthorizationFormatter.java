@@ -1,12 +1,9 @@
 package com.crane.wordformat.formatter;
 
-import com.aspose.words.Body;
 import com.aspose.words.Document;
 import com.aspose.words.Paragraph;
-import com.aspose.words.Run;
 import com.aspose.words.SaveFormat;
 import com.aspose.words.Section;
-import com.aspose.words.StyleIdentifier;
 import com.crane.wordformat.formatter.dto.StyleConfigDto;
 import com.crane.wordformat.formatter.enums.SectionEnums;
 import com.crane.wordformat.formatter.global.FormattingProcessShareVar;
@@ -46,37 +43,29 @@ public class InstructionsDissertationAuthorizationFormatter extends AbstractForm
 
   @Override
   public void formatTitle() {
-    if (titles.isEmpty()) {
-      Document studetDocument = formattingProcessShareVar.getStudetDocument();
-      Section section = new Section(studetDocument);
-      studetDocument.getSections().add(section);
-      Paragraph title = new Paragraph(studetDocument);
-      Body body = new Body(studetDocument);
-      body.getParagraphs().add(title);
-      section.appendChild(body);
-      title.getRuns().add(new Run(studetDocument, "关于学位论文使用授权的说明"));
-      titles.add(title);
-    }
-    for (Paragraph title : titles) {
-      StyleUtils.merge(title, styleConfigDto.getTitle(), StyleIdentifier.NORMAL);
-      title.getListFormat().removeNumbers();
-      for (Run run : title.getRuns()) {
-        StyleUtils.merge(run.getFont(), styleConfigDto.getTitle());
-      }
-    }
+
   }
 
   @Override
   public void formatBody() {
-    for (Paragraph title : titles) {
-      for (Paragraph paragraph : title.getParentSection().getBody().getParagraphs()) {
-        if (paragraph != title) {
-          StyleUtils.merge(paragraph, styleConfigDto.getText(), StyleIdentifier.NORMAL);
-          for (Run run : paragraph.getRuns()) {
-            StyleUtils.merge(run.getFont(), styleConfigDto.getText());
-          }
-        }
-      }
+    Document temp = formattingProcessShareVar.getFormatProcessDTO()
+        .getInstructionsDissertationAuthorizationDoc();
+    Paragraph newTitle;
+    if (titles.isEmpty()) {
+      Document studetDocument = formattingProcessShareVar.getStudetDocument();
+      Section section = new Section(studetDocument);
+      section.appendContent(temp.getFirstSection());
+      studetDocument.getSections().add(section);
+      newTitle = section.getBody().getFirstParagraph();
+    } else {
+      Paragraph title = titles.get(0);
+      Section parentSection = title.getParentSection();
+      parentSection.clearContent();
+      parentSection.getBody().getParagraphs().clear();
+      parentSection.appendContent(temp.getFirstSection());
+      newTitle = parentSection.getBody().getFirstParagraph();
     }
+    this.titles.clear();
+    titles.add(newTitle);
   }
 }

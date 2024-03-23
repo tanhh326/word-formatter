@@ -200,7 +200,7 @@ async function changeSetup(type: "next" | "pre") {
       <div v-show="current===2">
         <t-tabs v-model="setup2.currTab">
           <t-tab-panel label="中文" value="1">
-            <t-form layout="inline" style="margin-top: 14px">
+            <t-form style="margin-top: 14px">
               <t-form-item v-for="(item,index) in setup2.dynamicCoverForm.zh"
                            :key="index" :label="item.label">
                 <t-textarea v-model="submitForm.zhCover.form[item.key]"></t-textarea>
@@ -208,7 +208,7 @@ async function changeSetup(type: "next" | "pre") {
             </t-form>
           </t-tab-panel>
           <t-tab-panel label="英文" value="2">
-            <t-form layout="inline" style="margin-top: 14px">
+            <t-form style="margin-top: 14px">
               <t-form-item v-for="(item,index) in setup2.dynamicCoverForm.en"
                            :key="index" :label="item.label">
                 <t-textarea v-model="submitForm.enCover.form[item.key]"></t-textarea>

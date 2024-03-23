@@ -1,6 +1,7 @@
 package com.crane.wordformat.restful.dto;
 
 import com.aspose.words.Document;
+import com.crane.wordformat.formatter.InstructionsDissertationAuthorizationFormatter;
 import com.crane.wordformat.formatter.enums.DegreeEnums;
 import com.crane.wordformat.restful.entity.CoverFormPO;
 import java.util.Map;
@@ -18,6 +19,11 @@ public class FormatProcessDTO {
   private Cover enCover;
 
   private Map<String, String> coverForm;
+
+  /**
+   * {@link InstructionsDissertationAuthorizationFormatter#formatBody()}
+   */
+  private Document instructionsDissertationAuthorizationDoc;
 
   private String formatConfigId;
 

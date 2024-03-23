@@ -14,6 +14,7 @@ import com.aspose.words.HeaderFooterType;
 import com.aspose.words.LineStyle;
 import com.aspose.words.NumberStyle;
 import com.aspose.words.PageSetup;
+import com.aspose.words.PaperSize;
 import com.aspose.words.Paragraph;
 import com.aspose.words.ParagraphAlignment;
 import com.aspose.words.ParagraphFormat;
@@ -112,6 +113,7 @@ public class PostHandler {
         pageSetup.setLeftMargin(margin);
         pageSetup.setRightMargin(margin);
         pageSetup.setGutter(0);
+        pageSetup.setPaperSize(PaperSize.A4);
       }
     }
   }
