@@ -25,7 +25,6 @@ import com.crane.wordformat.restful.utils.MinioClientUtil;
 import io.minio.ObjectStat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -76,32 +75,22 @@ public class IndexController {
 
     CompletableFuture.runAsync(() -> {
       try {
-        // 存入原文件
-        ByteArrayOutputStream originalOutputStream = new ByteArrayOutputStream();
-
-        try (InputStream originalInputStream = multipartFile.getInputStream()) {
-          byte[] buffer = new byte[1024];
-          int bytesRead;
-          // 读取MultipartFile的输入流，并写入到输出流中
-          while ((bytesRead = originalInputStream.read(buffer)) != -1) {
-            originalOutputStream.write(buffer, 0, bytesRead);
-          }
-        }
-        // 上传源文件的路径
-        String originalfilePath = FilePathUtil.build("", "Originalfile",
-                multipartFile.getOriginalFilename());
-        ObjectStat putBack = minioClientUtil.putObject(originalfilePath, new ByteArrayInputStream(originalOutputStream.toByteArray()));
-
-        JSONObject formatConfigPOJSON = JSONObject.parseObject(JSONObject.toJSONString(formatProcessDTO));
-        System.out.println(formatConfigPOJSON.toJSONString());
-        formatConfigPOJSON.put("originalFilePath",originalfilePath);
-        formatConfigPOJSON.put("originalFileName",putBack.name());
-        formatConfigPOJSON.put("originalFileSize",putBack.length() / 1024.0 / 1024.0);
-        po.setRequestParams(formatConfigPOJSON);
-
         // 异步获取文件流创建Document对象
         Document studentDocument = new Document(multipartFile.getInputStream());
+        String extName = FileUtil.extName(multipartFile.getOriginalFilename());
 
+        String originalFilePath = FilePathUtil.build("", "formatting-origin",
+            DateUtil.format(DateTime.now(), "yyyy/MM/dd"),
+            UUID.randomUUID().toString());
+        ByteArrayOutputStream originOutputStream = new ByteArrayOutputStream();
+        studentDocument.save(originOutputStream, FILE_TYPE.get(extName));
+        minioClientUtil.putObject(originalFilePath,
+            new ByteArrayInputStream(originOutputStream.toByteArray()));
+        formatProcessDTO.setOriginDocPath(originalFilePath);
+        JSONObject formatConfigPOJSON = JSONObject.parseObject(
+            JSONObject.toJSONString(formatProcessDTO));
+        System.out.println(formatConfigPOJSON.toJSONString());
+        po.setRequestParams(formatConfigPOJSON);
         FormatConfigPO formatConfigPO = formatConfigMapper.selectById(
             formatProcessDTO.getFormatConfigId());
 
@@ -130,7 +119,6 @@ public class IndexController {
         formattingProcessShareVar.setFormatProcessDTO(formatProcessDTO);
         FormatterFactory.excute(formattingProcessShareVar);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        String extName = FileUtil.extName(multipartFile.getOriginalFilename());
         studentDocument.save(outputStream,
             FILE_TYPE.get(extName));
 
@@ -161,6 +149,11 @@ public class IndexController {
   @GetMapping("/beat")
   public String beat() {
     return UUID.randomUUID().toString();
+  }
+
+  @PostMapping("/retry/{id}")
+  public RestResponse<String> retry(@PathVariable String id) {
+    return RestResponse.ok(UUID.randomUUID().toString());
   }
 
   @GetMapping("/socket-test/{status}")

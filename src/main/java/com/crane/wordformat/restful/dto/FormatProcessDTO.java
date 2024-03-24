@@ -27,6 +27,8 @@ public class FormatProcessDTO {
 
   private String formatConfigId;
 
+  private String originDocPath;
+
   /**
    * 参考文献是否有序
    */
