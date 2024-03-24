@@ -42,6 +42,20 @@ async function preview(row: any) {
   previewLoading.value = false;
 }
 
+const downloadLoading = ref([]);
+
+async function handleDownload(row: any, rowIndex: number) {
+  downloadLoading.value[rowIndex] = true;
+  const data = await fileApi.download(row.coverTemplateUrl);
+  const url = window.URL.createObjectURL(data);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "封面-" + row.name + ".doc";
+  a.click();
+  window.URL.revokeObjectURL(url);
+  downloadLoading.value[rowIndex] = false;
+}
+
 const columns = [
   {
     title: '名称',
@@ -70,16 +84,17 @@ const columns = [
     title: '操作',
     colKey: 'operate',
     align: 'center',
-    cell: (_, {row}) => (
+    cell: (_, {row,rowIndex}) => (
         <>
           <Space>
             <Link theme="primary" onClick={() => preview(row)}>
               预览
             </Link>
-            <Link theme="primary" onClick={() => {
-            }}>
-              下载
-            </Link>
+            {
+              downloadLoading.value[rowIndex] ? <Loading size="small" text="下载中..."/> :
+                  <Link theme="primary" onClick={() => handleDownload(row, rowIndex)}>
+                    下载
+                  </Link>}
             <Link theme="primary" onClick={() => handleAddUpdate(row, pageHook.loadData)}>
               编辑
             </Link>

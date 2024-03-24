@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.io.FileUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.aspose.words.Document;
 import com.aspose.words.SaveFormat;
 import com.crane.wordformat.formatter.factory.FormatterFactory;
@@ -24,6 +25,7 @@ import com.crane.wordformat.restful.utils.MinioClientUtil;
 import io.minio.ObjectStat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -74,6 +76,29 @@ public class IndexController {
 
     CompletableFuture.runAsync(() -> {
       try {
+        // 存入原文件
+        ByteArrayOutputStream originalOutputStream = new ByteArrayOutputStream();
+
+        try (InputStream originalInputStream = multipartFile.getInputStream()) {
+          byte[] buffer = new byte[1024];
+          int bytesRead;
+          // 读取MultipartFile的输入流，并写入到输出流中
+          while ((bytesRead = originalInputStream.read(buffer)) != -1) {
+            originalOutputStream.write(buffer, 0, bytesRead);
+          }
+        }
+        // 上传源文件的路径
+        String originalfilePath = FilePathUtil.build("", "Originalfile",
+                multipartFile.getOriginalFilename());
+        ObjectStat putBack = minioClientUtil.putObject(originalfilePath, new ByteArrayInputStream(originalOutputStream.toByteArray()));
+
+        JSONObject formatConfigPOJSON = JSONObject.parseObject(JSONObject.toJSONString(formatProcessDTO));
+        System.out.println(formatConfigPOJSON.toJSONString());
+        formatConfigPOJSON.put("originalFilePath",originalfilePath);
+        formatConfigPOJSON.put("originalFileName",putBack.name());
+        formatConfigPOJSON.put("originalFileSize",putBack.length() / 1024.0 / 1024.0);
+        po.setRequestParams(formatConfigPOJSON);
+
         // 异步获取文件流创建Document对象
         Document studentDocument = new Document(multipartFile.getInputStream());
 

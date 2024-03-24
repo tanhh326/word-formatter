@@ -41,5 +41,5 @@ public class FormattingTaskPO extends BasePo {
   @TableField(typeHandler = JacksonTypeHandler.class)
   @Column(columnDefinition = "json")
   @Convert(converter = JpaMapJsonConverter.class)
-  private List<Map<String, Object>> requestParams;
+  private Map<String, Object> requestParams;
 }
