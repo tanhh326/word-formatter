@@ -17,6 +17,8 @@ import com.crane.wordformat.restful.global.RestResponse;
 import com.crane.wordformat.restful.mapper.CoverFormMapper;
 import com.crane.wordformat.restful.mapper.FormatConfigMapper;
 import com.crane.wordformat.restful.mapper.FormattingTaskMapper;
+import com.crane.wordformat.restful.socket.WebSocket;
+import com.crane.wordformat.restful.socket.msg.FormatTaskMsg;
 import com.crane.wordformat.restful.utils.FilePathUtil;
 import com.crane.wordformat.restful.utils.MinioClientUtil;
 import io.minio.ObjectStat;
@@ -30,6 +32,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,6 +51,8 @@ public class IndexController {
 
   private final CoverFormMapper coverFormMapper;
 
+  private final WebSocket webSocket;
+
   private final MinioClientUtil minioClientUtil;
 
   private final Map<String, Integer> FILE_TYPE = new HashMap() {{
@@ -60,7 +65,7 @@ public class IndexController {
       @RequestPart("data") FormatProcessDTO formatProcessDTO)
       throws Exception {
 
-   // 主线程只执行插入日志操作
+    // 主线程只执行插入日志操作
     FormattingTaskPO po = new FormattingTaskPO();
     po.setOriginDoc(multipartFile.getOriginalFilename());
     po.setCreatedTime(LocalDateTime.now());
@@ -120,6 +125,9 @@ public class IndexController {
         po.setStatus(FormattingTaskStatusEnum.FAIL.getValue());
       } finally {
         formattingTaskMapper.updateById(po);
+        webSocket.sendAllMessage(
+            new FormatTaskMsg().setId(po.getId()).setOriginDoc(po.getOriginDoc())
+                .setStatus(po.getStatus()));
       }
     });
     return RestResponse.ok();
@@ -128,5 +136,16 @@ public class IndexController {
   @GetMapping("/beat")
   public String beat() {
     return UUID.randomUUID().toString();
+  }
+
+  @GetMapping("/socket-test/{status}")
+  public void socketTest(@PathVariable Integer status) {
+    FormattingTaskPO po = new FormattingTaskPO();
+    po.setId(UUID.randomUUID().toString());
+    po.setStatus(status);
+    po.setOriginDoc("测试文档");
+    webSocket.sendAllMessage(
+        new FormatTaskMsg().setId(po.getId()).setOriginDoc(po.getOriginDoc())
+            .setStatus(po.getStatus()));
   }
 }

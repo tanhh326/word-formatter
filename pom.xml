@@ -16,6 +16,10 @@
   </build>
   <dependencies>
     <dependency>
+      <artifactId>spring-boot-starter-websocket</artifactId>
+      <groupId>org.springframework.boot</groupId>
+    </dependency>
+    <dependency>
       <artifactId>mybatis-plus-boot-starter</artifactId>
       <groupId>com.baomidou</groupId>
       <version>3.5.3.1</version>
@@ -82,19 +86,19 @@
     </dependency>
 
     <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-redis</artifactId>
+      <groupId>org.springframework.boot</groupId>
     </dependency>
 
     <dependency>
-      <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
+      <groupId>redis.clients</groupId>
       <version>2.9.0</version>
     </dependency>
 
     <dependency>
-      <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
+      <groupId>com.alibaba</groupId>
       <version>2.0.22</version>
     </dependency>
 
