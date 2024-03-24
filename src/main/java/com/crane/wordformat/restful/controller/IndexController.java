@@ -18,6 +18,7 @@ import com.crane.wordformat.restful.global.RestResponse;
 import com.crane.wordformat.restful.mapper.CoverFormMapper;
 import com.crane.wordformat.restful.mapper.FormatConfigMapper;
 import com.crane.wordformat.restful.mapper.FormattingTaskMapper;
+import com.crane.wordformat.restful.service.IndexService;
 import com.crane.wordformat.restful.socket.WebSocket;
 import com.crane.wordformat.restful.socket.msg.FormatTaskMsg;
 import com.crane.wordformat.restful.utils.FilePathUtil;
@@ -25,20 +26,22 @@ import com.crane.wordformat.restful.utils.MinioClientUtil;
 import io.minio.ObjectStat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+
+import io.minio.errors.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -56,6 +59,9 @@ public class IndexController {
 
   private final MinioClientUtil minioClientUtil;
 
+  @Autowired
+  IndexService indexService;
+
   private final Map<String, Integer> FILE_TYPE = new HashMap() {{
     put("docx", SaveFormat.DOCX);
     put("doc", SaveFormat.DOC);
@@ -65,84 +71,14 @@ public class IndexController {
   public RestResponse upload(@RequestParam("file") MultipartFile multipartFile,
       @RequestPart("data") FormatProcessDTO formatProcessDTO)
       throws Exception {
-
-    // 主线程只执行插入日志操作
-    FormattingTaskPO po = new FormattingTaskPO();
-    po.setOriginDoc(multipartFile.getOriginalFilename());
-    po.setCreatedTime(LocalDateTime.now());
-    po.setStatus(FormattingTaskStatusEnum.PROCESSING.getValue());
-    formattingTaskMapper.insert(po);
-
-    CompletableFuture.runAsync(() -> {
-      try {
-        // 异步获取文件流创建Document对象
-        Document studentDocument = new Document(multipartFile.getInputStream());
-        String extName = FileUtil.extName(multipartFile.getOriginalFilename());
-
-        String originalFilePath = FilePathUtil.build("", "formatting-origin",
-            DateUtil.format(DateTime.now(), "yyyy/MM/dd"),
-            UUID.randomUUID().toString());
-        ByteArrayOutputStream originOutputStream = new ByteArrayOutputStream();
-        studentDocument.save(originOutputStream, FILE_TYPE.get(extName));
-        minioClientUtil.putObject(originalFilePath,
-            new ByteArrayInputStream(originOutputStream.toByteArray()));
-        formatProcessDTO.setOriginDocPath(originalFilePath);
-        JSONObject formatConfigPOJSON = JSONObject.parseObject(
-            JSONObject.toJSONString(formatProcessDTO));
-        System.out.println(formatConfigPOJSON.toJSONString());
-        po.setRequestParams(formatConfigPOJSON);
-        FormatConfigPO formatConfigPO = formatConfigMapper.selectById(
-            formatProcessDTO.getFormatConfigId());
-
-        formatProcessDTO.setInstructionsDissertationAuthorizationDoc(
-            new Document(minioClientUtil.getObject(formatProcessDTO.getDegree().getPath())));
-
-        CoverFormPO zhCoverFormPO = coverFormMapper.selectById(
-            formatProcessDTO.getZhCover().getId());
-        formatProcessDTO.getZhCover()
-            .setDocument(
-                new Document(minioClientUtil.getObject(zhCoverFormPO.getCoverTemplateUrl())))
-            .setCoverFormPO(zhCoverFormPO);
-
-        CoverFormPO enCoverFormPO = coverFormMapper.selectById(
-            formatProcessDTO.getEnCover().getId());
-        formatProcessDTO.getEnCover()
-            .setDocument(
-                new Document(minioClientUtil.getObject(enCoverFormPO.getCoverTemplateUrl())))
-            .setCoverFormPO(enCoverFormPO);
-
-        po.setFormatConfigName(formatConfigPO.getName());
-
-        FormattingProcessShareVar formattingProcessShareVar = new FormattingProcessShareVar(
-            studentDocument);
-        formattingProcessShareVar.setFormatConfigPO(formatConfigPO);
-        formattingProcessShareVar.setFormatProcessDTO(formatProcessDTO);
-        FormatterFactory.excute(formattingProcessShareVar);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        studentDocument.save(outputStream,
-            FILE_TYPE.get(extName));
-
-        ObjectStat objectStat = minioClientUtil.putObject(
-            FilePathUtil.build(extName, "formatted-result",
-                DateUtil.format(DateTime.now(), "yyyy/MM/dd"),
-                UUID.randomUUID().toString()),
-            new ByteArrayInputStream(outputStream.toByteArray()));
-        po.setResultDoc(objectStat.name());
-        po.setResultDocSize((objectStat.length() / 1024.0 / 1024.0));
-        po.setTotalTimeSpent(
-            Duration.between(po.getCreatedTime(), LocalDateTime.now()).getSeconds());
-        po.setStatus(FormattingTaskStatusEnum.SUCCESS.getValue());
-      } catch (Exception e) {
-        e.printStackTrace();
-        po.setErrorMsg(ExceptionUtil.stacktraceToString(e));
-        po.setStatus(FormattingTaskStatusEnum.FAIL.getValue());
-      } finally {
-        formattingTaskMapper.updateById(po);
-        webSocket.sendAllMessage(
-            new FormatTaskMsg().setId(po.getId()).setOriginDoc(po.getOriginDoc())
-                .setStatus(po.getStatus()));
-      }
-    });
+    indexService.upload(formatConfigMapper,
+            formattingTaskMapper,
+            coverFormMapper,
+            webSocket,
+            minioClientUtil,
+            FILE_TYPE,
+            multipartFile,
+            formatProcessDTO);
     return RestResponse.ok();
   }
 
@@ -151,9 +87,18 @@ public class IndexController {
     return UUID.randomUUID().toString();
   }
 
-  @PostMapping("/retry/{id}")
-  public RestResponse<String> retry(@PathVariable String id) {
-    return RestResponse.ok(UUID.randomUUID().toString());
+  @PostMapping("/retry")
+  public RestResponse retry(@RequestBody FormatProcessDTO data) throws Exception {
+    if(data == null){
+      return RestResponse.error("请确认请求参数是否正确");
+    }
+    String jsonStr = JSONObject.toJSONString(data);
+    JSONObject parse = (JSONObject) JSONObject.parse(jsonStr);
+    String originDocPath = parse.getString("originDocPath");
+    InputStream inputStream = minioClientUtil.getObject(originDocPath);
+    // todo 转换为MultipartFile类型,文档名字没有正确获取
+    // indexService.upload(formatConfigMapper, formattingTaskMapper, coverFormMapper, webSocket, minioClientUtil,  FILE_TYPE, null, data);
+    return RestResponse.ok();
   }
 
   @GetMapping("/socket-test/{status}")

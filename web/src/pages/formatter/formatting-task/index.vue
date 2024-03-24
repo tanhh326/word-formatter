@@ -7,6 +7,7 @@ import CrudPage from '@/components/crud-page/index.vue';
 import {usePage, useRemove} from '@/hooks';
 import {formattingTaskApi} from "@/api/formatter";
 import {fileApi} from "@/api/system";
+import {wordFormatApi} from "@/api/formatter";
 import {toFixed} from "ol/math";
 
 function viewError(row: any) {
@@ -53,6 +54,8 @@ const {removeSignal} = useRemove<string>(formattingTaskApi.remove, pageHook.load
 
 const downloadLoading = ref([]);
 
+const retryLoading = ref([]);
+
 async function handleDownload(row: any, rowIndex: number) {
   downloadLoading.value[rowIndex] = true;
   const data = await fileApi.download(row.resultDoc);
@@ -65,6 +68,13 @@ async function handleDownload(row: any, rowIndex: number) {
   downloadLoading.value[rowIndex] = false;
 }
 
+async function handleRetry(row: any, rowIndex: number) {
+  retryLoading.value[rowIndex] = true;
+  const data = await wordFormatApi.retry(row.requestParams);
+  console.log(row.requestParams)
+  console.log(data)
+  retryLoading.value[rowIndex] = false;
+}
 
 const columns = [
   {
@@ -129,6 +139,11 @@ const columns = [
     cell: (_, {row, rowIndex}) => (
         <>
           <Space>
+            {
+              retryLoading.value[rowIndex] ? <Loading size="small" text="正在重试"/> :
+            <Link theme="primary" onClick={() => handleRetry(row, rowIndex)}>
+              重试
+            </Link>}
             {
               downloadLoading.value[rowIndex] ? <Loading size="small" text="下载中..."/> :
                   <Link theme="primary" disabled={row.status != 1} onClick={() => handleDownload(row, rowIndex)}>

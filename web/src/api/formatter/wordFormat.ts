@@ -12,3 +12,15 @@ export function formatting(file: File, data: {}) {
         {isTransformResponse: false}
     );
 }
+
+
+export function retry(data: {}) {
+    return request.post({
+            url: path + "/retry",
+            data: data
+        },
+        {
+            isTransformResponse: false
+        }
+    );
+}
