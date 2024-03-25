@@ -46,7 +46,8 @@ public class IndexServiceImpl implements IndexService {
 
         // 主线程只执行插入日志操作
         FormattingTaskPO po = new FormattingTaskPO();
-        po.setOriginDoc(multipartFile.getOriginalFilename());
+        String originalFilename = multipartFile.getOriginalFilename();
+        po.setOriginDoc(originalFilename);
         po.setCreatedTime(LocalDateTime.now());
         po.setStatus(FormattingTaskStatusEnum.PROCESSING.getValue());
         formattingTaskMapper.insert(po);
@@ -65,6 +66,7 @@ public class IndexServiceImpl implements IndexService {
                 minioClientUtil.putObject(originalFilePath,
                         new ByteArrayInputStream(originOutputStream.toByteArray()));
                 formatProcessDTO.setOriginDocPath(originalFilePath);
+                formatProcessDTO.setOriginalFilename(originalFilename);
                 JSONObject formatConfigPOJSON = JSONObject.parseObject(
                         JSONObject.toJSONString(formatProcessDTO));
                 po.setRequestParams(formatConfigPOJSON);

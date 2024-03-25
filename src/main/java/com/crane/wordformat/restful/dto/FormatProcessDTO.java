@@ -29,6 +29,8 @@ public class FormatProcessDTO {
 
   private String originDocPath;
 
+  private String originalFilename;
+
   /**
    * 参考文献是否有序
    */

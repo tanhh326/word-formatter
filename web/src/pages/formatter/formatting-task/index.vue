@@ -1,6 +1,6 @@
 <script lang="tsx" setup>
 import cloneDeep from 'lodash/cloneDeep';
-import {DialogPlugin, FormItem, Input, Link, Loading, Select, Space, Tag} from 'tdesign-vue-next';
+import {DialogPlugin, FormItem, Input, Link, Loading, MessagePlugin, Select, Space, Tag} from 'tdesign-vue-next';
 import {reactive, ref} from 'vue';
 
 import CrudPage from '@/components/crud-page/index.vue';
@@ -69,11 +69,13 @@ async function handleDownload(row: any, rowIndex: number) {
 }
 
 async function handleRetry(row: any, rowIndex: number) {
-  retryLoading.value[rowIndex] = true;
   const data = await wordFormatApi.retry(row.requestParams);
-  console.log(row.requestParams)
   console.log(data)
-  retryLoading.value[rowIndex] = false;
+  if(data.code == 0){
+    MessagePlugin.success(data.msg)
+  }else {
+    MessagePlugin.error(data.msg)
+  }
 }
 
 const columns = [
@@ -140,7 +142,6 @@ const columns = [
         <>
           <Space>
             {
-              retryLoading.value[rowIndex] ? <Loading size="small" text="正在重试"/> :
             <Link theme="primary" onClick={() => handleRetry(row, rowIndex)}>
               重试
             </Link>}

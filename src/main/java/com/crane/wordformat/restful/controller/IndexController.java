@@ -41,6 +41,7 @@ import io.minio.errors.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -95,9 +96,17 @@ public class IndexController {
     String jsonStr = JSONObject.toJSONString(data);
     JSONObject parse = (JSONObject) JSONObject.parse(jsonStr);
     String originDocPath = parse.getString("originDocPath");
+    String originalFilename = parse.getString("originalFilename");
     InputStream inputStream = minioClientUtil.getObject(originDocPath);
-    // todo 转换为MultipartFile类型,文档名字没有正确获取
-    // indexService.upload(formatConfigMapper, formattingTaskMapper, coverFormMapper, webSocket, minioClientUtil,  FILE_TYPE, null, data);
+    MultipartFile file = new MockMultipartFile(originDocPath.split("/")[4], originalFilename, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", inputStream);
+    indexService.upload(formatConfigMapper,
+            formattingTaskMapper,
+            coverFormMapper,
+            webSocket,
+            minioClientUtil,
+            FILE_TYPE,
+            file,
+            data);
     return RestResponse.ok();
   }
 
