@@ -55,7 +55,7 @@ public class CoverFormServiceImpl implements CoverFormService {
             // 使用ByteArrayOutputStream来捕获输出
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             doc.save(out, options); // 将当前页转换为PNG图片并保存到ByteArrayOutputStream中
-            String originalFilePath = FilePathUtil.build("png", "coverPicture",
+            String originalFilePath = FilePathUtil.build("png", "cover-Picture",
                     UUID.randomUUID().toString());
             minioClientUtil.putObject(originalFilePath,
                     new ByteArrayInputStream(out.toByteArray()));
