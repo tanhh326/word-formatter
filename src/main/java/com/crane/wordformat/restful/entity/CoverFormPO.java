@@ -25,7 +25,10 @@ public class CoverFormPO extends BasePo {
 
   private String name;
 
-  private String coverPreviewUrl;
+  @TableField(typeHandler = JacksonTypeHandler.class)
+  @Column(columnDefinition = "json")
+  @Convert(converter = JpaMapJsonConverter.class)
+  private List<String> coverPreviewUrl;
 
   private String coverTemplateUrl;
 

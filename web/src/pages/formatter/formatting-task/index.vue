@@ -5,9 +5,8 @@ import {reactive, ref} from 'vue';
 
 import CrudPage from '@/components/crud-page/index.vue';
 import {usePage, useRemove} from '@/hooks';
-import {formattingTaskApi} from "@/api/formatter";
+import {formattingTaskApi, wordFormatApi} from "@/api/formatter";
 import {fileApi} from "@/api/system";
-import {wordFormatApi} from "@/api/formatter";
 import {toFixed} from "ol/math";
 
 function viewError(row: any) {
@@ -69,13 +68,10 @@ async function handleDownload(row: any, rowIndex: number) {
 }
 
 async function handleRetry(row: any, rowIndex: number) {
+  retryLoading.value[rowIndex] = true;
   const data = await wordFormatApi.retry(row.requestParams);
-  console.log(data)
-  if(data.code == 0){
-    MessagePlugin.success(data.msg)
-  }else {
-    MessagePlugin.error(data.msg)
-  }
+  MessagePlugin.success(data.msg);
+  retryLoading.value[rowIndex] = false;
 }
 
 const columns = [
@@ -142,9 +138,11 @@ const columns = [
         <>
           <Space>
             {
-            <Link theme="primary" onClick={() => handleRetry(row, rowIndex)}>
-              重试
-            </Link>}
+              retryLoading.value[rowIndex] ? <Loading size="small" text="重试中..."/> :
+                  <Link theme="primary" onClick={() => handleRetry(row, rowIndex)}>
+                    重试
+                  </Link>
+            }
             {
               downloadLoading.value[rowIndex] ? <Loading size="small" text="下载中..."/> :
                   <Link theme="primary" disabled={row.status != 1} onClick={() => handleDownload(row, rowIndex)}>
