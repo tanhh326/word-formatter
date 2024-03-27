@@ -16,6 +16,11 @@
   </build>
   <dependencies>
     <dependency>
+      <artifactId>sa-token-spring-boot-starter</artifactId>
+      <groupId>cn.dev33</groupId>
+      <version>1.37.0</version>
+    </dependency>
+    <dependency>
       <artifactId>spring-boot-starter-websocket</artifactId>
       <groupId>org.springframework.boot</groupId>
     </dependency>
@@ -68,7 +73,7 @@
       <version>1.9.0</version>
     </dependency>
     <dependency>
-      <artifactId>hutool-core</artifactId>
+      <artifactId>hutool-all</artifactId>
       <groupId>cn.hutool</groupId>
       <version>5.8.26</version>
     </dependency>
@@ -101,11 +106,11 @@
       <groupId>com.alibaba</groupId>
       <version>2.0.22</version>
     </dependency>
-      <dependency>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-test</artifactId>
-          <version>6.0.11</version>
-      </dependency>
+    <dependency>
+      <artifactId>spring-test</artifactId>
+      <groupId>org.springframework</groupId>
+      <version>6.0.11</version>
+    </dependency>
 
   </dependencies>
   <description>word-formatter</description>

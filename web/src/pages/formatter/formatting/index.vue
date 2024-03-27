@@ -1,5 +1,5 @@
 <script lang="tsx" setup>
-import {MessagePlugin, Space} from "tdesign-vue-next";
+import {LoadingPlugin, MessagePlugin, Space} from "tdesign-vue-next";
 import {ref} from "vue";
 import ConfigForm from "@/pages/formatter/format-config/components/ConfigForm.vue";
 import {coverFormApi, formatConfigApi, wordFormatApi} from "@/api/formatter"
@@ -134,8 +134,18 @@ async function changeSetup(type: "next" | "pre") {
         break;
       case 1:
         if ((await setup2FormRef.value.validate()) === true) {
+          const loadingInstance = LoadingPlugin({
+            loading: true,
+            fullscreen: true,
+            text: "正在解析封面..",
+            attach: 'body'
+          });
           setup2.value.dynamicCoverForm.zh = (await coverFormApi.getById(submitForm.value.zhCover.id)).form;
           setup2.value.dynamicCoverForm.en = (await coverFormApi.getById(submitForm.value.enCover.id)).form;
+          const {zh, en} = await wordFormatApi.analyseCover(uploadFiles.value[0].raw, {zh: setup2.value.dynamicCoverForm.zh, en: setup2.value.dynamicCoverForm.en});
+          Object.assign(submitForm.value.zhCover.form, zh);
+          Object.assign(submitForm.value.enCover.form, en);
+          loadingInstance.hide();
         } else {
           able = false;
         }

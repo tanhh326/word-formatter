@@ -5,12 +5,16 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Map;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -21,7 +25,7 @@ public class BasePo implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 1L;
-  
+
   @Id
   @TableId(type = IdType.ASSIGN_UUID)
   private String id;
@@ -42,4 +46,11 @@ public class BasePo implements Serializable {
 
   @TableLogic
   private boolean deleted;
+
+  private String remark;
+
+  @TableField(typeHandler = JacksonTypeHandler.class)
+  @Column(columnDefinition = "json")
+  @Convert(converter = JpaMapJsonConverter.class)
+  private Map<String, Object> extend;
 }

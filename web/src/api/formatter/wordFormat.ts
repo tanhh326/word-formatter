@@ -13,6 +13,15 @@ export function formatting(file: File, data: {}) {
     );
 }
 
+export function analyseCover(file: File, data: {
+    zh: any[],
+    en: any[]
+}) {
+    return request.upload("file", file,
+        {url: path + "/analyse-cover", timeout: 10000 * 1000, data},
+    );
+}
+
 
 export function retry(data: {}) {
     return request.post({
