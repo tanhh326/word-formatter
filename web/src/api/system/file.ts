@@ -19,6 +19,15 @@ export function download(filePath: string) {
     );
 }
 
+export function getPictureURL(filePaths: string) {
+    return request.get({
+            url: path + "/getPictureURL",
+            timeout: 10000 * 1000,
+            params: {filePaths: filePaths}
+        }
+    );
+}
+
 export function doc2pdf(filePath: string) {
     return request.get({
             url: path + "/doc2pdf",
