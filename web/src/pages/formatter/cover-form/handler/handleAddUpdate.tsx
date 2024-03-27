@@ -24,7 +24,7 @@ const rules: Record<string, Array<FormRule>> = {
 export function handleAddUpdate<R extends Record<string, any>>(row: R | null, callBack: Function) {
     const formRef = ref<FormInstanceFunctions>();
     const isAdd = !row;
-    const form = reactive<any>(row ? cloneDeep<R>(row) : {form: [{}]});
+    const form = reactive<any>(row ? cloneDeep<R>(row) : {form: [{key: "var1"}]});
 
     const uploadFile = ref([]);
 
@@ -80,7 +80,7 @@ export function handleAddUpdate<R extends Record<string, any>>(row: R | null, ca
                     </FormItem>
                     <FormItem label="模板表单">
                         <Space direction={"vertical"}>
-                            <Button onClick={() => form.form.push({})}>新增</Button>
+                            <Button onClick={() => form.form.push({key: `var${form.form.length + 1}`})}>新增</Button>
                             <PrimaryTable bordered={true} columns={formColumn.value} data={form.form}></PrimaryTable>
                         </Space>
                     </FormItem>

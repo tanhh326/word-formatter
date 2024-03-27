@@ -360,7 +360,9 @@ public class ChapterFormatter extends AbstractFormatter {
       level = matchedNumber.split(splitter).length;
       finalText = ConverterUtils.removeEmpty(text)
           .replaceFirst(matchedNumber, matchedNumber + TheConstant.ZH_SPACE);
-    } else {
+    } /*
+    //会预处理，不用处理了
+    else {
       for (Pattern patternIt : nodeTitlePatterns) {
         Matcher matcherIt = patternIt.matcher(text);
         if (matcherIt.find()) {
@@ -374,7 +376,7 @@ public class ChapterFormatter extends AbstractFormatter {
           break;
         }
       }
-    }
+    }*/
     // 不是节标题，交给文本处理器处理
     if (level == null) {
       return false;
