@@ -47,6 +47,8 @@ public class BasePo implements Serializable {
   @TableLogic
   private boolean deleted;
 
+  private String deptId;
+
   private String remark;
 
   @TableField(typeHandler = JacksonTypeHandler.class)
