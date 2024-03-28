@@ -8,15 +8,20 @@ import {
     Input,
     MessagePlugin,
     PrimaryTable,
+    Select,
     Space,
     Upload
 } from 'tdesign-vue-next';
 import {reactive, ref} from 'vue';
 import {coverFormApi} from "@/api/formatter";
 import {fileApi} from "@/api/system";
+import {DEGREE_MAP, LANGUAGE_MAP} from "@/constants";
+import {json2Options} from "@/utils";
 
 const rules: Record<string, Array<FormRule>> = {
     name: [{required: true, message: '名称不能为空', trigger: 'change'}],
+    language: [{required: true, message: '语言必须选择', trigger: 'change'}],
+    degree: [{required: true, message: '学位必须选择', trigger: 'change'}],
     coverTemplateUrl: [{required: true, message: '封面模板必须上传', trigger: 'change'}],
 };
 
@@ -74,6 +79,12 @@ export function handleAddUpdate<R extends Record<string, any>>(row: R | null, ca
                 <Form ref={formRef} data={form} rules={rules}>
                     <FormItem name="name" label="名称">
                         <Input v-model={form.name}/>
+                    </FormItem>
+                    <FormItem name="language" label="语言">
+                        <Select options={json2Options(LANGUAGE_MAP)} v-model={form.language}/>
+                    </FormItem>
+                    <FormItem name="degree" label="学位">
+                        <Select options={json2Options(DEGREE_MAP)} v-model={form.degree}/>
                     </FormItem>
                     <FormItem name="coverTemplateUrl" label="封面模板">
                         <Upload accept=".doc,.docx" v-model={uploadFile.value} requestMethod={requestMethod}/>

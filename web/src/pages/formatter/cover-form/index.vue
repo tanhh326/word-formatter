@@ -2,6 +2,7 @@
 import cloneDeep from 'lodash/cloneDeep';
 import {DialogPlugin, FormItem, Input, Loading} from 'tdesign-vue-next';
 import {reactive, ref} from 'vue';
+import {DEGREE_MAP, LANGUAGE_MAP} from "@/constants";
 
 import CrudPage from '@/components/crud-page/index.vue';
 import {usePage, useRemove} from '@/hooks';
@@ -77,6 +78,18 @@ const columns = [
     title: '名称',
     colKey: 'name',
     align: 'center',
+  },
+  {
+    title: '语言',
+    colKey: 'language',
+    align: 'center',
+    cell: (_, {row, rowIndex}) => <t-tag variant="light-outline">{LANGUAGE_MAP[row.language]}</t-tag>,
+  },
+  {
+    title: '学位',
+    colKey: 'degree',
+    align: 'center',
+    cell: (_, {row, rowIndex}) => <t-tag variant="light-outline">{DEGREE_MAP[row.degree]}</t-tag>,
   },
   {
     title: '创建时间',

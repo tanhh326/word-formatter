@@ -8,20 +8,15 @@ import com.crane.wordformat.restful.dto.CoverFormDTO;
 import com.crane.wordformat.restful.dto.FormatProcessDTO;
 import com.crane.wordformat.restful.entity.FormattingTaskPO;
 import com.crane.wordformat.restful.global.RestResponse;
-import com.crane.wordformat.restful.mapper.CoverFormMapper;
-import com.crane.wordformat.restful.mapper.FormatConfigMapper;
-import com.crane.wordformat.restful.mapper.FormattingTaskMapper;
 import com.crane.wordformat.restful.service.IndexService;
 import com.crane.wordformat.restful.socket.WebSocket;
 import com.crane.wordformat.restful.socket.msg.FormatTaskMsg;
 import com.crane.wordformat.restful.utils.MinioClientUtil;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -42,35 +37,17 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class IndexController {
 
-  private final FormatConfigMapper formatConfigMapper;
-
-  private final FormattingTaskMapper formattingTaskMapper;
-
-  private final CoverFormMapper coverFormMapper;
-
   private final WebSocket webSocket;
 
   private final MinioClientUtil minioClientUtil;
 
-  private final Map<String, Integer> FILE_TYPE = new HashMap() {{
-    put("docx", SaveFormat.DOCX);
-    put("doc", SaveFormat.DOC);
-  }};
-  @Autowired
-  IndexService indexService;
+  private final IndexService indexService;
 
   @PostMapping("/formatting")
   public RestResponse upload(@RequestParam("file") MultipartFile multipartFile,
       @RequestPart("data") FormatProcessDTO formatProcessDTO)
       throws Exception {
-    indexService.upload(formatConfigMapper,
-        formattingTaskMapper,
-        coverFormMapper,
-        webSocket,
-        minioClientUtil,
-        FILE_TYPE,
-        multipartFile,
-        formatProcessDTO);
+    indexService.upload(multipartFile, formatProcessDTO);
     return RestResponse.ok();
   }
 
@@ -91,14 +68,7 @@ public class IndexController {
     InputStream inputStream = minioClientUtil.getObject(originDocPath);
     MultipartFile file = new MockMultipartFile(originDocPath.split("/")[4], originalFilename,
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document", inputStream);
-    indexService.upload(formatConfigMapper,
-        formattingTaskMapper,
-        coverFormMapper,
-        webSocket,
-        minioClientUtil,
-        FILE_TYPE,
-        file,
-        data);
+    indexService.upload(file, data);
     return RestResponse.ok();
   }
 

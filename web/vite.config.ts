@@ -10,49 +10,46 @@ const CWD = process.cwd();
 
 // https://vitejs.dev/config/
 export default ({mode}: ConfigEnv): UserConfig => {
-  const {VITE_BASE_URL, VITE_API_URL_PREFIX} = loadEnv(mode, CWD);
-  return {
-    base: VITE_BASE_URL,
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, './src'),
-      },
-    },
-    build: {
-      outDir: "../src/main/resources/static",
-    },
-    css: {
-      preprocessorOptions: {
-        less: {
-          modifyVars: {
-            hack: `true; @import (reference) "${path.resolve('src/style/variables.less')}";`,
-          },
-          math: 'strict',
-          javascriptEnabled: true,
+    const {VITE_BASE_URL, VITE_API_URL_PREFIX} = loadEnv(mode, CWD);
+    return {
+        base: VITE_BASE_URL,
+        resolve: {
+            alias: {
+                '@': path.resolve(__dirname, './src'),
+            },
         },
-      },
-    },
-
-    plugins: [
-      vue(),
-      vueJsx(),
-      viteMockServe({
-        mockPath: 'mock',
-        enable: true,
-      }),
-      svgLoader(),
-    ],
-
-    server: {
-      port: 3002,
-      host: '0.0.0.0',
-      proxy: {
-        [VITE_API_URL_PREFIX]: {
-          target: 'http://127.0.0.1:7020/',
-          changeOrigin: true,
-          // rewrite: (path) => path.replace(/^\/api/, '/')
+        css: {
+            preprocessorOptions: {
+                less: {
+                    modifyVars: {
+                        hack: `true; @import (reference) "${path.resolve('src/style/variables.less')}";`,
+                    },
+                    math: 'strict',
+                    javascriptEnabled: true,
+                },
+            },
         },
-      },
-    },
-  };
+
+        plugins: [
+            vue(),
+            vueJsx(),
+            viteMockServe({
+                mockPath: 'mock',
+                enable: true,
+            }),
+            svgLoader(),
+        ],
+
+        server: {
+            port: 3002,
+            host: '0.0.0.0',
+            proxy: {
+                [VITE_API_URL_PREFIX]: {
+                    target: 'http://127.0.0.1:7020/',
+                    changeOrigin: true,
+                    // rewrite: (path) => path.replace(/^\/api/, '/')
+                },
+            },
+        },
+    };
 };

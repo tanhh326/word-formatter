@@ -37,6 +37,10 @@ public class CoverFormPO extends BasePo {
   @Convert(converter = JpaMapJsonConverter.class)
   private List<Form> form;
 
+  private String language;
+
+  private String degree;
+
   @Data
   public static class Form {
 

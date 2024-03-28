@@ -1,9 +1,10 @@
 <script lang="tsx" setup>
 import {LoadingPlugin, MessagePlugin, Space} from "tdesign-vue-next";
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import ConfigForm from "@/pages/formatter/format-config/components/ConfigForm.vue";
 import {coverFormApi, formatConfigApi, wordFormatApi} from "@/api/formatter"
-import {DEGREE_OPTIONS} from "./constant";
+import {DEGREE_MAP} from "@/constants";
+import {json2Options, list2Options} from "@/utils";
 
 const currTab = ref("1");
 
@@ -14,16 +15,14 @@ const columns = [
 const data = ref([]);
 
 const optionContainer = ref({
-  coverForm: [],
+  coverForm: {
+    zh: [],
+    en: []
+  },
   formatConfig: [],
 })
 
-coverFormApi.list({}).then((data) => {
-  optionContainer.value.coverForm = data.map((it: any) => ({label: it.name, value: it.id}));
-});
-formatConfigApi.list({}).then((data) => {
-  optionContainer.value.formatConfig = data.map((it: any) => ({label: it.name, value: it.id}));
-});
+
 const expandedRow = (h, {row}) => (
     <Space direction="vertical">
       {row.title && <ConfigForm type="标题" config={row.title}/>}
@@ -51,7 +50,7 @@ const loading = ref(false);
 
 
 const submitForm = ref({
-  degree: "",
+  degreeCode: "",
   formatConfigId: "",
   zhCover: {
     id: "",
@@ -61,7 +60,32 @@ const submitForm = ref({
     id: "",
     form: {}
   },
-  referencesOrderly: false
+  referencesOrderly: true
+});
+
+const degreeLanguageTree: any = ref({});
+
+coverFormApi.tree().then((data) => {
+  degreeLanguageTree.value = data;
+});
+
+const coverFormMap = computed(() => {
+  submitForm.value.zhCover = {
+    id: "",
+    form: {}
+  };
+  submitForm.value.enCover = {
+    id: "",
+    form: {}
+  };
+  return {
+    zh: list2Options(degreeLanguageTree.value[submitForm.value.degreeCode]?.ZH || [], "id", "name"),
+    en: list2Options(degreeLanguageTree.value[submitForm.value.degreeCode]?.EN || [], "id", "name"),
+  };
+})
+
+formatConfigApi.list({}).then((data) => {
+  optionContainer.value.formatConfig = data.map((it: any) => ({label: it.name, value: it.id}));
 });
 
 async function handleFormat() {
@@ -105,7 +129,7 @@ const setup2 = ref({
     en: []
   },
   formRule: {
-    degree: [
+    degreeCode: [
       {required: true, message: '学位必须选择', trigger: 'blur'},
       {required: true, message: "学位必须选择", trigger: "change"},
     ],
@@ -114,12 +138,10 @@ const setup2 = ref({
       {required: true, message: "配置必须选择", trigger: "change"},
     ],
     "zhCover.id": [
-      {required: true, message: '中文封面必须选择', trigger: 'blur'},
-      {required: true, message: "中文封面必须选择", trigger: "change"},
+      {required: true, message: '中文封面必须选择', trigger: 'submit'},
     ],
     "enCover.id": [
-      {required: true, message: '英文封面必须选择', trigger: 'blur'},
-      {required: true, message: "英文封面必须选择", trigger: "change"},
+      {required: true, message: '英文封面必须选择', trigger: 'submit'},
     ],
   }
 });
@@ -188,23 +210,23 @@ async function changeSetup(type: "next" | "pre") {
         <div v-show="current==1">
           <t-form ref="setup2FormRef" :data="submitForm" :rules="setup2.formRule" label-align="left"
                   required-mark>
-            <t-form-item label="学位" name="degree">
-              <t-select v-model="submitForm.degree" :options="DEGREE_OPTIONS"></t-select>
-            </t-form-item>
             <t-form-item label="配置" name="formatConfigId">
               <t-select v-model="submitForm.formatConfigId"
-                        :options="optionContainer.formatConfig"></t-select>
+                        :options="optionContainer.formatConfig"/>
+            </t-form-item>
+            <t-form-item label="学位" name="degreeCode">
+              <t-select v-model="submitForm.degreeCode" :options="json2Options(DEGREE_MAP)"/>
             </t-form-item>
             <t-form-item label="中文封面" name="zhCover.id">
-              <t-select v-model="submitForm.zhCover.id"
-                        :options="optionContainer.coverForm"></t-select>
+              <t-select v-model="submitForm.zhCover.id" :disabled="!submitForm.degreeCode"
+                        :options="coverFormMap.zh"/>
             </t-form-item>
             <t-form-item label="英文封面" name="enCover.id">
-              <t-select v-model="submitForm.enCover.id"
-                        :options="optionContainer.coverForm"></t-select>
+              <t-select v-model="submitForm.enCover.id" :disabled="!submitForm.degreeCode"
+                        :options="coverFormMap.en"/>
             </t-form-item>
-            <t-form-item label="参考文献顺序">
-              <t-switch v-model="submitForm.referencesOrderly"></t-switch>
+            <t-form-item label="参考文献序号">
+              <t-switch v-model="submitForm.referencesOrderly" :label="['有', '无']"/>
             </t-form-item>
           </t-form>
         </div>

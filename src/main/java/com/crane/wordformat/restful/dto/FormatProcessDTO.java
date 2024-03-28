@@ -13,6 +13,8 @@ import lombok.experimental.Accessors;
 public class FormatProcessDTO {
 
   private DegreeEnums degree;
+  
+  private String degreeCode;
 
   private Cover zhCover;
 
