@@ -40,8 +40,19 @@ public class FormattingTaskController {
   }
 
   @GetMapping
-  public IPage list(PageDTO pageDTO, FormattingTaskPO formattingTaskPO) {
+  public IPage page(PageDTO pageDTO, FormattingTaskPO formattingTaskPO) {
     return formattingTaskMapper.selectPage(pageDTO, new LambdaQueryWrapper<FormattingTaskPO>()
+        .like(StringUtils.hasText(formattingTaskPO.getId()), FormattingTaskPO::getId,
+            formattingTaskPO.getId())
+        .like(StringUtils.hasText(formattingTaskPO.getOriginDoc()), FormattingTaskPO::getOriginDoc,
+            formattingTaskPO.getOriginDoc())
+        .eq(formattingTaskPO.getStatus() != null, FormattingTaskPO::getStatus,
+            formattingTaskPO.getStatus()));
+  }
+
+  @GetMapping("/list")
+  public List<FormattingTaskPO> list(FormattingTaskPO formattingTaskPO) {
+    return formattingTaskMapper.selectList(new LambdaQueryWrapper<FormattingTaskPO>()
         .like(StringUtils.hasText(formattingTaskPO.getId()), FormattingTaskPO::getId,
             formattingTaskPO.getId())
         .like(StringUtils.hasText(formattingTaskPO.getOriginDoc()), FormattingTaskPO::getOriginDoc,

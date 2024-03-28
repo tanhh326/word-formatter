@@ -3,7 +3,7 @@ import {request} from "@/utils/request";
 
 const path = '/word-format';
 
-export const {add, remove, update, list, getById} = generateBasicApi(path);
+export const {add, remove, update, page, list, getById} = generateBasicApi(path);
 
 
 export function formatting(file: File, data: {}) {

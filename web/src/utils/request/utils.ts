@@ -85,7 +85,7 @@ export function generateBasicApi<
                 data,
             });
         },
-        list: function (params?: Query) {
+        page: function (params?: Query) {
             return request.get<Response[]>({
                 url: `${path}`,
                 params,
@@ -94,6 +94,12 @@ export function generateBasicApi<
                         allowDots: true
                     })
                 }
+            });
+        },
+        list: function (params?: Query) {
+            return request.get<Response[]>({
+                url: `${path}/list`,
+                params,
             });
         },
         getById: function (id: string) {

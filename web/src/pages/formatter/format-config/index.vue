@@ -12,7 +12,7 @@ const defaultQueryForm = {code: '', deptId: '', name: ''};
 const queryForm = reactive(cloneDeep(defaultQueryForm));
 
 const pageHook = usePage<any>({
-  api: formatConfigApi.list,
+  api: formatConfigApi.page,
   async query(reset: boolean) {
     if (reset) {
       Object.assign(queryForm, cloneDeep(defaultQueryForm));

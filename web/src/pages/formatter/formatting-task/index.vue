@@ -34,7 +34,7 @@ const defaultQueryForm = {originDoc: '', id: '', status: ''};
 const queryForm = reactive(cloneDeep(defaultQueryForm));
 
 const pageHook = usePage<any>({
-  api: formattingTaskApi.list,
+  api: formattingTaskApi.page,
   defaultSort: [
     {
       sortBy: "createdTime",

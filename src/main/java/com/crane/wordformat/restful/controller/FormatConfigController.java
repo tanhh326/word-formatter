@@ -40,11 +40,18 @@ public class FormatConfigController {
   }
 
   @GetMapping
-  public IPage list(PageDTO pageDTO, FormatConfigPO formatConfigPO) {
+  public IPage<FormatConfigPO> page(PageDTO pageDTO, FormatConfigPO formatConfigPO) {
     return formatConfigMapper.selectPage(pageDTO,
         new LambdaQueryWrapper<FormatConfigPO>()
             .like(StringUtils.hasText(formatConfigPO.getName()), FormatConfigPO::getName,
                 formatConfigPO.getName())
     );
+  }
+
+  @GetMapping("/list")
+  public List<FormatConfigPO> list(FormatConfigPO formatConfigPO) {
+    return formatConfigMapper.selectList(new LambdaQueryWrapper<FormatConfigPO>()
+        .like(StringUtils.hasText(formatConfigPO.getName()), FormatConfigPO::getName,
+            formatConfigPO.getName()));
   }
 }

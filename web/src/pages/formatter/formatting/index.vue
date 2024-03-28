@@ -18,11 +18,11 @@ const optionContainer = ref({
   formatConfig: [],
 })
 
-coverFormApi.list({}).then(({records}) => {
-  optionContainer.value.coverForm = records.map((it: any) => ({label: it.name, value: it.id}));
+coverFormApi.list({}).then((data) => {
+  optionContainer.value.coverForm = data.map((it: any) => ({label: it.name, value: it.id}));
 });
-formatConfigApi.list({}).then(({records}) => {
-  optionContainer.value.formatConfig = records.map((it: any) => ({label: it.name, value: it.id}));
+formatConfigApi.list({}).then((data) => {
+  optionContainer.value.formatConfig = data.map((it: any) => ({label: it.name, value: it.id}));
 });
 const expandedRow = (h, {row}) => (
     <Space direction="vertical">

@@ -12,7 +12,7 @@ import {handleAddUpdate} from './handler';
 const defaultQueryForm = {code: '', deptId: '', name: ''};
 const queryForm = reactive(cloneDeep(defaultQueryForm));
 const pageHook = usePage<any>({
-  api: coverFormApi.list,
+  api: coverFormApi.page,
   async query(reset: boolean) {
     if (reset) {
       Object.assign(queryForm, cloneDeep(defaultQueryForm));
